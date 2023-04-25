@@ -26,4 +26,4 @@ app = FastAPI(
 
 @app.get("/")
 async def root():
-    return {"message": "Welcome to the GROUP PROJECT. See /docs for more information."}
+    return {"message": "Welcome to the GROUP PROJECT here!. See /docs for more information."}
