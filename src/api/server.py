@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-# from src.api import *
+from src.api import athletes
 
 description = """
 Group project description 
@@ -7,7 +7,7 @@ Group project description
 
 tags_metadata = [
     {
-        "name": "players",
+        "name": "athletes",
         "description": "Access player information.",
     },
 ]
@@ -22,7 +22,7 @@ app = FastAPI(
     },
     openapi_tags=tags_metadata,
 )
-# app.include_router(characters.router)
+app.include_router(athletes.router)
 
 @app.get("/")
 async def root():
