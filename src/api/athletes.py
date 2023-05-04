@@ -46,3 +46,27 @@ def get_athlete(id: int):
             "age": res.age,
             "stats": stats
         }
+    
+class StatOptions(str, Enum):
+    games_played = "games_played"
+    minutes_played = "minutes_played"
+    field_goal_percentage = "field_goal_percentage"
+    three_points_percentage = "three_points_percentage"
+    free_throw_percentage = "free_throw_percentage"
+    total_rebounds = "total_rebounds"
+    assists = "assists"
+    steals = "steals"
+    blocks = "blocks"
+    points = "points"
+    
+@router.get("/athletes/", tags=["athletes"])
+def compare_athletes(
+    athlete_names: list, 
+    stat: StatOptions = StatOptions.points
+    ):
+    """ 
+    This endpoint returns a comparison between the specified athletes (as a table). 
+    It allows the user to compare athletes by a stat in `StatOptions` 
+    * `athlete_names`: list of athlete names to compare (must have length >1)
+    * `stat`: stat to compare athletes by (defaults to points)
+    """
