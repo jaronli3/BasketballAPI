@@ -24,7 +24,7 @@ def get_team(team_id: int):
     team = sqlalchemy.select(db.teams.c.team_id, db.teams.c.team_name, db.teams.c.team_abbrev).where(db.teams.c.team_id == team_id)
 
     with db.engine.connect() as conn:
-        
+        ...
     
 
 class stat_options(str, Enum):
