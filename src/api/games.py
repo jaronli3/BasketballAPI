@@ -161,7 +161,20 @@ def add_game(
             "away": away_team_id,
             "winner": home_team_id if home_team == winner else away_team_id,
             "date": date,
-
+            "pts_home": points_home,
+            "pts_away": points_away,
+            "three_p_percent_home": three_pointer_percent_home,
+            "three_p_percent_away": three_pointer_percent_away,
+            "reb_home": rebounds_home,
+            "reb_away": rebounds_away,
+            "ast_home": assists_home,
+            "ast_away": assists_away,
+            "stl_home": steals_home,
+            "stl_away": steals_away,
+            "blk_home": blocks_home,
+            "blk_away": blocks_away
         }
+        conn.execute(db.games.insert().values(**game))
+        conn.commit()
 
-add_game(team_options.milwaukee_bucks, team_options.toronto_raptors, team_options.milwaukee_bucks)
+    return game_id
