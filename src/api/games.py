@@ -105,7 +105,6 @@ def get_game(
 def add_game(
         home_team: team_options,
         away_team: team_options,
-        winner: team_options,
         date: date = None,
         points_home: int = None,
         points_away: int = None,
@@ -131,8 +130,6 @@ def add_game(
     """
     if home_team == away_team:
         raise HTTPException(status_code=400, detail="Teams are the same")
-    if winner != home_team and winner != away_team:
-        raise HTTPException(status_code=400, detail="Select a valid winner")
 
     with db.engine.connect() as conn:
         game_id = conn.execute(
@@ -159,7 +156,7 @@ def add_game(
             "game_id": game_id,
             "home": home_team_id,
             "away": away_team_id,
-            "winner": home_team_id if home_team == winner else away_team_id,
+            "winner": home_team_id if points_home > points_away else away_team_id,
             "date": date,
             "pts_home": points_home,
             "pts_away": points_away,
