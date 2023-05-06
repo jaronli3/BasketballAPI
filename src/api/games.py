@@ -1,8 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from enum import Enum
-from collections import Counter
 import sqlalchemy
-from fastapi.params import Query
+from datetime import date
 from src import database as db
 
 router = APIRouter()
@@ -102,11 +101,12 @@ def get_game(
         return json
 
 
+@router.get("/games/add_game", tags=["games"])
 def add_game(
         home_team: team_options,
         away_team: team_options,
         winner: team_options,
-        date: str = None,
+        date: date = None,
         points_home: int = None,
         points_away: int = None,
         three_pointer_percent_home: float = None,
