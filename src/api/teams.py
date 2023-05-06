@@ -24,7 +24,40 @@ def get_team(team_id: int):
     team = sqlalchemy.select(db.teams.c.team_id, db.teams.c.team_name, db.teams.c.team_abbrev).where(db.teams.c.team_id == team_id)
 
     with db.engine.connect() as conn:
-        ...
+        result = conn.execute(team).fetchone()
+        if result:
+            json = {"team_id": team_id, "team_name": result.team_name}
+            games = sqlalchemy.select(db.games.c.home, 
+                                    db.games.c.away, 
+                                    db.games.c.pts_home, 
+                                    db.games.c.pts_away, 
+                                    db.games.c.winner).where((team_id == db.games.c.home) | (team_id == db.games.c.away))
+
+            games_table = conn.execute(team).fetchall()
+
+            wins = 0
+            points_for = 0
+            points_allowed = 0
+
+            for row in games_table:
+                if games_table.winner == team_id:
+                    wins += 1
+                if team_id == games_table.home:
+                    points_for += games_table.pts_home
+                    points_away += games_table.pts_away
+                elif team_id == games_table.away:
+                    points_for += games_table.pts_away
+                    points_away += games_table.points_for
+
+
+            json["Wins"] = wins
+            json["Losses"] = 82 - wins
+            json["Average Points For"] = points_for / 82
+            json["Average Points Allowed"] = points_allowed / 82
+
+            return json
+            
+        raise HTTPException(status_code=404, detail="team not found.")
     
 
 class stat_options(str, Enum):
