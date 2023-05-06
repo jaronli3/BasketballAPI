@@ -1,11 +1,10 @@
 from fastapi import FastAPI
-from src.api import athletes
-from src.api import games
-from src.api import teams
+from src.api import athletes, games, teams
 from src.api import pkg_util
 
 description = """
-Group project description 
+Get all the information and analytical insight 
+you need about the 2023 NBA regular season.
 """
 
 tags_metadata = [
@@ -24,12 +23,12 @@ tags_metadata = [
 ]
 
 app = FastAPI(
-    title="Temporary Title",
+    title="Basketball API",
     description=description,
     version="0.0.1",
     contact={
         "name": "Quinn Peterson, Zachary Weinfeld, Jaron Li",
-        "email": "qpeterso@calpoly.edu, zweinfel@calpoly.edu, jli213@calpoly.edu",
+        "email": "qpeterso@calpoly.edu"
     },
     openapi_tags=tags_metadata,
 )
