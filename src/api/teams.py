@@ -9,6 +9,7 @@ router = APIRouter()
 
 @router.get("/teams/{id}", tags=["teams"])
 
+
 def get_team(team_id: int):
 
     ''' 

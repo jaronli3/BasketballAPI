@@ -101,7 +101,7 @@ def get_game(
         return json
 
 
-@router.get("/games/add_game", tags=["games"])
+@router.post("/games/add_game", tags=["games"])
 def add_game(
         home_team: team_options,
         away_team: team_options,
