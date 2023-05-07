@@ -1,0 +1,20 @@
+[
+  {
+    "game_id": 661,
+    "home_team": "Toronto Raptors",
+    "away_team": "Milwaukee Bucks",
+    "winner": "Milwaukee Bucks",
+    "home_team_score": 101,
+    "away_team_score": 104,
+    "date": "2023-01-04"
+  },
+  {
+    "game_id": 0,
+    "home_team": "Toronto Raptors",
+    "away_team": "Milwaukee Bucks",
+    "winner": "Toronto Raptors",
+    "home_team_score": 121,
+    "away_team_score": 105,
+    "date": "2023-04-09"
+  }
+]
