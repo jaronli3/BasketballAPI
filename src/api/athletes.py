@@ -4,6 +4,7 @@ from collections import Counter
 import sqlalchemy
 from fastapi.params import Query
 from src import database as db
+from typing import List
 
 router = APIRouter()
 
@@ -61,12 +62,37 @@ class StatOptions(str, Enum):
     
 @router.get("/athletes/", tags=["athletes"])
 def compare_athletes(
-    athlete_names: list, 
+    athlete_names: List[str] = Query(None),
     stat: StatOptions = StatOptions.points
     ):
     """ 
-    This endpoint returns a comparison between the specified athletes (as a table). 
+    This endpoint returns a comparison between the specified athletes, 
+    and returns the athlete id, name, and stat as specified in the input.  
     It allows the user to compare athletes by a stat in `StatOptions` 
     * `athlete_names`: list of athlete names to compare (must have length >1)
     * `stat`: stat to compare athletes by (defaults to points)
     """
+    
+    if len(athlete_names) < 2:
+        raise HTTPException(status_code=400, detail="athlete list given does not contain enough althletes.")
+
+    stmt = (
+        sqlalchemy.select(db.athletes.c.athlete_id, db.athletes.c.name, sqlalchemy.column(stat).label('stat'))
+        .where(sqlalchemy.column('name').in_(athlete_names))
+        .order_by(sqlalchemy.column(stat))
+    )
+
+    with db.engine.connect() as conn:
+        result = conn.execute(stmt)
+
+        json = []
+        for row in result.fetchall():
+            json.append(
+                {
+                    "athlete_id": row.athlete_id,
+                    "name": row.name,
+                    stat: row.stat
+                }
+            )
+
+        return json
