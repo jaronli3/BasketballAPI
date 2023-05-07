@@ -1,0 +1,18 @@
+{
+    "athlete_id": 321,
+    "name": "Damian Jones",
+    "team_id": 20,
+    "age": 27,
+    "stats": {
+      "games_played": 22,
+      "minutes_played": 176,
+      "field_goal_percentage": 0.541,
+      "three_points_percentage": 0,
+      "free_throw_percentage": 0.75,
+      "total_rebounds": 55,
+      "assists": 4,
+      "steals": 3,
+      "blocks": 12,
+      "points": 55
+    }
+  }

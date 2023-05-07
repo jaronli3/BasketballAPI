@@ -1,0 +1,17 @@
+[
+    {
+      "athlete_id": 306,
+      "name": "LeBron James",
+      "games_played": 55
+    },
+    {
+      "athlete_id": 139,
+      "name": "Stephen Curry",
+      "games_played": 56
+    },
+    {
+      "athlete_id": 14,
+      "name": "Cole Anthony",
+      "games_played": 60
+    }
+  ]
