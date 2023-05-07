@@ -4,7 +4,8 @@ from collections import Counter
 import sqlalchemy
 from fastapi.params import Query
 from src import database as db
-from typing import List
+from typing import List, Dict
+from pydantic import BaseModel
 
 router = APIRouter()
 
@@ -96,3 +97,58 @@ def compare_athletes(
             )
 
         return json
+    
+class AthleteJson(BaseModel):
+    name: str
+    age: int
+    team: int 
+    stats: Dict[StatOptions, float] = {}
+
+@router.post("/athletes/", tags=["athletes"])
+def add_athlete(athlete: AthleteJson): 
+    """
+    This endpoint adds an athlete to the database. The athlete is represented by the AthleteJson, which contains 
+    * name: the name of the athlete
+    * age: age of the athlete 
+    * team: the team id of the athlete’s team
+    * stats: a dictionary, matching StatOptions (such as "points") to values 
+    The endpoint returns the id of the resulting athlete that was created
+    """
+
+    with db.engine.connect() as conn:
+        team = conn.execute(
+            sqlalchemy.text("""SELECT * FROM teams WHERE teams.team_id = :x"""), 
+            [{"x": athlete.team}]
+        ).fetchone()
+        if not team:
+            raise HTTPException(status_code=404, detail="team not found.")
+        
+        new_athlete_id = conn.execute(
+            sqlalchemy.text("""
+            SELECT athletes.athlete_id
+            FROM athletes
+            ORDER BY athlete_id DESC
+            LIMIT 1 
+            """)
+        ).fetchone().athlete_id + 1
+
+        new_athlete = {
+            "athlete_id": new_athlete_id,
+            "name": athlete.name,
+            "age": athlete.age,
+            "team_id": athlete.team,
+            "games_played": athlete.stats.get("games_played", None),
+            "minutes_played": athlete.stats.get("minutes_played", None),
+            "field_goal_percentage": athlete.stats.get("field_goal_percentage", None),
+            "three_points_percentage": athlete.stats.get("three_points_percentage", None),
+            "free_throw_percentage": athlete.stats.get("free_throw_percentage", None),
+            "total_rebounds": athlete.stats.get("total_rebounds", None),
+            "assists": athlete.stats.get("assists", None),
+            "steals": athlete.stats.get("steals", None),
+            "blocks": athlete.stats.get("blocks", None),
+            "points": athlete.stats.get("points", None)
+        }
+            
+        conn.execute(db.athletes.insert().values(**new_athlete))
+        conn.commit()
+        return new_athlete_id
