@@ -36,7 +36,7 @@ class team_options(str, Enum):
     boston_celtics = "Boston Celtics"
     portland_trail_blazers = "Portland Trail Blazers"
     philadelphia_76ers = "Philadelphia 76ers"
-    houson_rockets = "Houston Rockets"
+    houston_rockets = "Houston Rockets"
     brooklyn_nets = "Brooklyn Nets"
 
 

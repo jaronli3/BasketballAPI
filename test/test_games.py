@@ -34,7 +34,7 @@ def test_get_game_same_team():
 def test_add_game():
     game_id = add_game(
         team_options.brooklyn_nets,
-        team_options.houson_rockets,
+        team_options.houston_rockets,
         datetime.date(2023, 3, 30),
         100, 99, 30.1, 28.4, 5, 4, 9, 2, 4, 3, 2, 1
     )
