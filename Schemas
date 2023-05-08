@@ -1,0 +1,55 @@
+create table
+  public.athletes (
+    athlete_id bigint not null,
+    name text null,
+    age bigint null,
+    team_id bigint null,
+    games_played bigint null,
+    minutes_played bigint null,
+    field_goal_percentage double precision null,
+    three_points_percentage double precision null,
+    free_throw_percentage double precision null,
+    total_rebounds bigint null,
+    assists bigint null,
+    steals bigint null,
+    blocks bigint null,
+    turnovers bigint null,
+    points bigint null,
+    constraint athletes_pkey primary key (athlete_id),
+    constraint athletes_team_id_fkey foreign key (team_id) references teams (team_id)
+  ) tablespace pg_default;
+  
+  
+create table
+  public.games (
+    game_id bigint not null,
+    home bigint null,
+    away bigint null,
+    winner bigint null,
+    date date null,
+    pts_home bigint null,
+    pts_away bigint null,
+    three_p_percent_home double precision null,
+    three_p_percent_away double precision null,
+    reb_home bigint null,
+    reb_away bigint null,
+    ast_home bigint null,
+    ast_away bigint null,
+    stl_home bigint null,
+    stl_away bigint null,
+    blk_home bigint null,
+    blk_away bigint null,
+    constraint games_pkey primary key (game_id),
+    constraint games_away_fkey foreign key (away) references teams (team_id),
+    constraint games_home_fkey foreign key (home) references teams (team_id),
+    constraint games_winner_fkey foreign key (winner) references teams (team_id)
+  ) tablespace pg_default;
+  
+  
+create table
+  public.teams (
+    team_id bigint not null,
+    team_abbrev text null,
+    team_name text null,
+    constraint teams_pkey primary key (team_id)
+  ) tablespace pg_default;
