@@ -49,13 +49,13 @@ def get_game(
     This endpoint returns a list of games by the teams provided ordered by date
 
     For each game it returns:
-        *`game_id`: internal id of game
-        *`home_team`: name of home team
-        *`away_team`: name of away team
-        *`winner_team`: name of winner team
-        *`home_team_score`: score of home team
-        *`away_team_score`: score of away team
-        *`date`: the date the game was held
+        * `game_id`: internal id of game
+        * `home_team`: name of home team
+        * `away_team`: name of away team
+        * `winner_team`: name of winner team
+        * `home_team_score`: score of home team
+        * `away_team_score`: score of away team
+        * `date`: the date the game was held
     """
     if home_team == away_team:
         raise HTTPException(status_code=400, detail="Teams are the same")
@@ -121,10 +121,10 @@ def add_game(
 ):
     """
     This endpoint adds a game to the database. The game is represented by:
-        *`home_team_id`: the id of the home team
-        *`away_team_id`: the id of the away team
-        *`winner_id`: the id of the winner’s team
-        *Additional statistics about the game
+        * `home_team_id`: the id of the home team
+        * `away_team_id`: the id of the away team
+        * `winner_id`: the id of the winner’s team
+        * Additional statistics about the game
 
     The endpoint returns the id of the game created
     """
