@@ -9,6 +9,7 @@ from pydantic import BaseModel
 
 router = APIRouter()
 
+
 @router.get("/athletes/{id}", tags=["athletes"])
 def get_athlete(id: int):
     """ 
@@ -97,12 +98,14 @@ def compare_athletes(
             )
 
         return json
-    
+
+
 class AthleteJson(BaseModel):
     name: str
     age: int
     team: int 
     stats: Dict[StatOptions, float] = {}
+
 
 @router.post("/athletes/", tags=["athletes"])
 def add_athlete(athlete: AthleteJson): 

@@ -8,31 +8,32 @@ from typing import List, Dict
 
 router = APIRouter()
 
+
 @router.get("/teams/{id}", tags=["teams"])
-
 def get_team(team_id: int):
-
-    ''' 
+    """
     This endpoint returns a single team by its identifier. For each team it returns:
-        team_id: The internal id of the team
-        team_name: The name of the team
-        Wins: Number of games the team won
-        Losses: Number of games the team lost
-        Average Points for: Average number of points the team scored
-        Average Points allowed: Average number of points team allowed
-    '''
+        *`team_id`: The internal id of the team
+        *`team_name`: The name of the team
+        *`Wins`: Number of games the team won
+        *`Losses`: Number of games the team lost
+        *`Average Points for`: Average number of points the team scored
+        *`Average Points allowed`: Average number of points team allowed
+    """
 
-    team = sqlalchemy.select(db.teams.c.team_id, db.teams.c.team_name, db.teams.c.team_abbrev).where(db.teams.c.team_id == team_id)
+    team = sqlalchemy.select(db.teams.c.team_id, db.teams.c.team_name, db.teams.c.team_abbrev).where(
+        db.teams.c.team_id == team_id)
 
     with db.engine.connect() as conn:
         result = conn.execute(team).fetchone()
         if result:
             json = {"team_id": team_id, "team_name": result.team_name}
-            games = sqlalchemy.select(db.games.c.home, 
-                                    db.games.c.away, 
-                                    db.games.c.pts_home, 
-                                    db.games.c.pts_away, 
-                                    db.games.c.winner).where((team_id == db.games.c.home) | (team_id == db.games.c.away))
+            games = sqlalchemy.select(db.games.c.home,
+                                      db.games.c.away,
+                                      db.games.c.pts_home,
+                                      db.games.c.pts_away,
+                                      db.games.c.winner).where(
+                (team_id == db.games.c.home) | (team_id == db.games.c.away))
 
             games_table = conn.execute(games).fetchall()
 
@@ -50,7 +51,6 @@ def get_team(team_id: int):
                     points_for += row.pts_away
                     points_allowed += row.pts_home
 
-
             json["Wins"] = wins
             json["Losses"] = 82 - wins
             json["Average Points For"] = round((points_for / 82), 2)
@@ -59,7 +59,7 @@ def get_team(team_id: int):
             return json
 
         raise HTTPException(status_code=404, detail="team not found.")
-    
+
 
 class stat_options(str, Enum):
     wins = "wins"
@@ -72,57 +72,57 @@ class stat_options(str, Enum):
     avg_3p_pct = "average three point percentage"
     # avg_ft_pct = "average free throw percentage"
 
+
 @router.get("/teams/", tags=["teams"])
 def compare_team(teams: List[str] = Query(None), compare_by: stat_options = stat_options.wins):
-
-    ''' 
-    This endpoint compares any number of teams (> 1) by a single metric 
-        * 'Team_names': list of team names (length > 1) 
-        * Compare_by must be one of the following values 
-            * "wins"
-            * "points"
-            * "rebounds"
-            * "assists"
-            * "steals"
-            * "blocks"
-            * "average three point percentage"
     '''
-
+    This endpoint compares any number of teams (> 1) by a single metric 
+        * 'Team_names': list of team names (length > 1)
+        * Compare_by must be one of the following values 
+            * `wins`
+            * `points`
+            * `rebounds`
+            * `assists`
+            * `steals`
+            * `blocks`
+            * `average three point percentage`
+    '''
 
     if len(teams) < 2:
         raise HTTPException(status_code=400, detail="not enough teams given")
-    
+
     stmt = (
         sqlalchemy.select(db.teams.c.team_id, db.teams.c.team_name)
-        .where(sqlalchemy.column('team_name').in_(teams))
+            .where(sqlalchemy.column('team_name').in_(teams))
     )
-    
+
     with db.engine.connect() as conn:
         result = conn.execute(stmt).fetchall()
         json = []
         for row in result:
             team_dict = {"team id": row.team_id, "team name": row.team_name}
-            games = sqlalchemy.select(db.games.c.home, 
-                                    db.games.c.pts_home, 
-                                    db.games.c.winner,
-                                    db.games.c.reb_home,
-                                    db.games.c.ast_home,
-                                    db.games.c.stl_home,
-                                    db.games.c.blk_home,
-                                    db.games.c.three_p_percent_home,
-                                    db.games.c.away, 
-                                    db.games.c.pts_away, 
-                                    db.games.c.winner,
-                                    db.games.c.reb_away,
-                                    db.games.c.ast_away,
-                                    db.games.c.stl_away,
-                                    db.games.c.blk_away,
-                                    db.games.c.three_p_percent_away).where((row.team_id == db.games.c.home) | (row.team_id == db.games.c.away))
+            games = sqlalchemy.select(db.games.c.home,
+                                      db.games.c.pts_home,
+                                      db.games.c.winner,
+                                      db.games.c.reb_home,
+                                      db.games.c.ast_home,
+                                      db.games.c.stl_home,
+                                      db.games.c.blk_home,
+                                      db.games.c.three_p_percent_home,
+                                      db.games.c.away,
+                                      db.games.c.pts_away,
+                                      db.games.c.winner,
+                                      db.games.c.reb_away,
+                                      db.games.c.ast_away,
+                                      db.games.c.stl_away,
+                                      db.games.c.blk_away,
+                                      db.games.c.three_p_percent_away).where(
+                (row.team_id == db.games.c.home) | (row.team_id == db.games.c.away))
 
             games1 = conn.execute(games).fetchall()
             wins = 0
             points = 0
-            rebounds = 0 
+            rebounds = 0
             assists = 0
             steals = 0
             blocks = 0
@@ -149,20 +149,20 @@ def compare_team(teams: List[str] = Query(None), compare_by: stat_options = stat
             if compare_by == "wins":
                 stats_dict = {"Wins": wins}
             elif compare_by == "points":
-                stats_dict = {"Average points per game": round((points/82), 2)}
+                stats_dict = {"Average points per game": round((points / 82), 2)}
             elif compare_by == "rebounds":
-                stats_dict = {"Average rebounds per game": round((rebounds/82), 2)}
+                stats_dict = {"Average rebounds per game": round((rebounds / 82), 2)}
             elif compare_by == "assists":
-                stats_dict = { "Average assists per game": round((assists/82),2)}
+                stats_dict = {"Average assists per game": round((assists / 82), 2)}
             elif compare_by == "steals":
-                stats_dict = { "Average steals per game": round((steals/82), 2)}
+                stats_dict = {"Average steals per game": round((steals / 82), 2)}
             elif compare_by == "blocks":
-                stats_dict = {  "Average blocks per game": round((blocks/82), 2)}
+                stats_dict = {"Average blocks per game": round((blocks / 82), 2)}
             elif compare_by == "average three point percentage":
-                stats_dict = {"Average three point percentage per game": round((average_three/82), 2)}
-            
+                stats_dict = {"Average three point percentage per game": round((average_three / 82), 2)}
+
             team_dict[f"Compare by {compare_by}"] = stats_dict
 
             json.append(team_dict)
-        
+
         return json
