@@ -42,8 +42,8 @@ class team_options(str, Enum):
 
 @router.get("/games/", tags=["games"])
 def get_game(
-        home_team: team_options = team_options.toronto_raptors,
-        away_team: team_options = team_options.milwaukee_bucks
+        home_team: team_options,
+        away_team: team_options
 ):
     """
     This endpoint returns a list of games by the teams provided ordered by date
