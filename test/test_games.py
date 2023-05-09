@@ -53,5 +53,5 @@ def test_add_game():
 
 
 def test_add_game_same_team():
-    response = client.get("/games/add_game?home_team=Toronto%20Raptors&away_team=Toronto%20Raptors")
+    response = client.get("/games/?home_team=Toronto%20Raptors&away_team=Toronto%20Raptors")
     assert response.status_code == 400
