@@ -1,0 +1,16 @@
+[
+    {
+      "team id": 13,
+      "team name": "Golden State Warriors",
+      "Compare by rebounds": {
+        "Average rebounds per game": 44.6
+      }
+    },
+    {
+      "team id": 20,
+      "team name": "Los Angeles Lakers",
+      "Compare by rebounds": {
+        "Average rebounds per game": 45.71
+      }
+    }
+  ]

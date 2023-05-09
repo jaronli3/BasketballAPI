@@ -1,0 +1,16 @@
+[
+    {
+      "team id": 5,
+      "team name": "Cleveland Cavaliers",
+      "Compare by blocks": {
+        "Average blocks per game": 4.68
+      }
+    },
+    {
+      "team id": 25,
+      "team name": "Boston Celtics",
+      "Compare by blocks": {
+        "Average blocks per game": 5.24
+      }
+    }
+  ]

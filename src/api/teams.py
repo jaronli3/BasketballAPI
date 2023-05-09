@@ -9,7 +9,7 @@ from typing import List, Dict
 router = APIRouter()
 
 
-@router.get("/teams/{id}", tags=["teams"])
+@router.get("/teams/{team_id}", tags=["teams"])
 def get_team(team_id: int):
     """
     This endpoint returns a single team by its identifier. For each team it returns:

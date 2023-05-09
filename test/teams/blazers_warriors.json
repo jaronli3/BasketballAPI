@@ -1,0 +1,16 @@
+[
+    {
+      "team id": 13,
+      "team name": "Golden State Warriors",
+      "Compare by average three point percentage": {
+        "Average three point percentage per game": 38.46
+      }
+    },
+    {
+      "team id": 26,
+      "team name": "Portland Trail Blazers",
+      "Compare by average three point percentage": {
+        "Average three point percentage per game": 36.41
+      }
+    }
+  ]
