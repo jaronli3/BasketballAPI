@@ -6,7 +6,6 @@ from src import database as db
 
 router = APIRouter()
 
-
 class team_options(str, Enum):
     toronto_raptors = "Toronto Raptors"
     memphis_grizzlies = "Memphis Grizzlies"
