@@ -5,7 +5,7 @@ import sqlalchemy
 from fastapi.params import Query
 from src import database as db
 from typing import List, Dict
-
+import operator
 router = APIRouter()
 
 
@@ -162,7 +162,6 @@ def compare_team(teams: List[str] = Query(None), compare_by: stat_options = stat
                 stats_dict = {"Average three point percentage per game": round((average_three / 82), 2)}
 
             team_dict[f"Compare by {compare_by}"] = stats_dict
-
             json.append(team_dict)
 
         return json
