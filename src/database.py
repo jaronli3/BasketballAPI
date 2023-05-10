@@ -23,3 +23,4 @@ with engine.begin() as conn:
     athletes = sqlalchemy.Table("athletes", metadata_obj, autoload_with=engine)
     games = sqlalchemy.Table("games", metadata_obj, autoload_with=engine)
     teams = sqlalchemy.Table("teams", metadata_obj, autoload_with=engine)
+
