@@ -28,7 +28,7 @@ def get_athlete(id: int, year = None):
         with db.engine.connect() as conn:
             res = conn.execute(stmt).fetchone()
             res1 = conn.execute(stmt1).fetchall()
-            if res is None or rest is None:
+            if res is None or res1 is None:
                 raise HTTPException(status_code=404, detail="athlete not found.")
 
             games_played = 0
