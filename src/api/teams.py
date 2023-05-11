@@ -104,25 +104,27 @@ class stat_options(str, Enum):
 
 
 @router.get("/teams/", tags=["teams"])
-def compare_team(teams: List[str] = Query(None), compare_by: stat_options = stat_options.wins):
+def compare_team(team_1: team_options,
+                 team_2: team_options,
+                 team_3: team_options = None,
+                 team_4: team_options = None,
+                 team_5: team_options = None,
+                 compare_by: stat_options = stat_options.wins):
     '''
-    This endpoint compares any number of teams (> 1) by a single metric 
+    This endpoint compares up to 5 teams (> 1) by a single metric
         * 'Team_names': list of team names (length > 1)
         * Compare_by must be one of the following values 
-            * `wins`
-            * `points`
-            * `rebounds`
-            * `assists`
-            * `steals`
-            * `blocks`
+            * `wins`: The average wins per season
+            * `points`: The average points per game
+            * `rebounds`: The average rebounds per game
+            * `assists`: The average assists per game
+            * `steals`: The average steals per game
+            * `blocks`: The average blocks per game
     '''
-
-    if len(teams) < 2:
-        raise HTTPException(status_code=400, detail="not enough teams given")
 
     stmt = (
         sqlalchemy.select(db.teams.c.team_id, db.teams.c.team_name)
-            .where(sqlalchemy.column('team_name').in_(teams))
+            .where(sqlalchemy.column('team_name').in_([team_1, team_2, team_3, team_4, team_5]))
     )
 
     with db.engine.connect() as conn:
@@ -171,19 +173,21 @@ def compare_team(teams: List[str] = Query(None), compare_by: stat_options = stat
                     blocks += game.blk_away
 
             if compare_by == "wins":
-                stats_dict = {"Wins": wins}
+                metric = wins / 5
             elif compare_by == "points":
-                stats_dict = {"Average points per game": round((points / 82), 2)}
+                metric = round((points / (82*5)), 2)
             elif compare_by == "rebounds":
-                stats_dict = {"Average rebounds per game": round((rebounds / 82), 2)}
+                metric = round((rebounds / (82*5)), 2)
             elif compare_by == "assists":
-                stats_dict = {"Average assists per game": round((assists / 82), 2)}
+                metric = round((assists / (82*5)), 2)
             elif compare_by == "steals":
-                stats_dict = {"Average steals per game": round((steals / 82), 2)}
+                metric = round((steals / (82*5)), 2)
             elif compare_by == "blocks":
-                stats_dict = {"Average blocks per game": round((blocks / 82), 2)}
+                metric = round((blocks / (82*5)), 2)
 
-            team_dict[f"Compare by {compare_by}"] = stats_dict
+            team_dict[str(compare_by.value)] = metric
             json.append(team_dict)
+
+            json.sort(key=lambda x: -x[compare_by])
 
         return json
