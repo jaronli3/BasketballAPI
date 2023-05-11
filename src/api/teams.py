@@ -111,8 +111,8 @@ def compare_team(team_1: team_options,
                  team_5: team_options = None,
                  compare_by: stat_options = stat_options.wins):
     '''
-    This endpoint compares up to 5 teams (> 1) by a single metric
-        * 'Team_names': list of team names (length > 1)
+    This endpoint compares between 2 and 5 teams by a single metric
+        * 'team_i': a team to be compared
         * Compare_by must be one of the following values 
             * `wins`: The average wins per season
             * `points`: The average points per game
