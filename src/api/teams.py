@@ -6,8 +6,41 @@ from fastapi.params import Query
 from src import database as db
 from typing import List, Dict
 import operator
+
+
 router = APIRouter()
 
+class team_options(str, Enum):
+    toronto_raptors = "Toronto Raptors"
+    memphis_grizzlies = "Memphis Grizzlies"
+    miami_heat = "Miami Heat"
+    utah_jazz = "Utah Jazz"
+    milwaukee_bucks = "Milwaukee Bucks"
+    cleveland_cavaliers = "Cleveland Cavaliers"
+    new_orleans_pelicans = "New Orleans Pelicans"
+    minnesota_timberwolves = "Minnesota Timberwolves"
+    orlando_magic = "Orlando Magic"
+    new_york_knicks = "New York Knicks"
+    washington_wizards = "Washington Wizards"
+    phoenix_suns = "Phoenix Suns"
+    detroit_pistons = "Detroit Pistons"
+    golden_state_warriors = "Golden State Warriors"
+    charlotte_hornets = "Charlotte Hornets"
+    san_antonio_spurs = "San Antonio Spurs"
+    sacramento_kings = "Sacramento Kings"
+    los_angeles_clippers = "Los Angeles Clippers"
+    oklahoma_city_thunder = "Oklahoma City Thunder"
+    dallas_mavericks = "Dallas Mavericks"
+    los_angeles_lakers = "Los Angeles Lakers"
+    indiana_pacers = "Indiana Pacers"
+    atlanta_hawks = "Atlanta Hawks"
+    chicago_bulls = "Chicago Bulls"
+    denver_nuggets = "Denver Nuggets"
+    boston_celtics = "Boston Celtics"
+    portland_trail_blazers = "Portland Trail Blazers"
+    philadelphia_76ers = "Philadelphia 76ers"
+    houston_rockets = "Houston Rockets"
+    brooklyn_nets = "Brooklyn Nets"
 
 @router.get("/teams/{team_id}", tags=["teams"])
 def get_team(team_id: int):
@@ -68,9 +101,6 @@ class stat_options(str, Enum):
     assists = "assists"
     steals = "steals"
     blocks = "blocks"
-    # avg_fg_pct = "average field goal percentage"
-    avg_3p_pct = "average three point percentage"
-    # avg_ft_pct = "average free throw percentage"
 
 
 @router.get("/teams/", tags=["teams"])
@@ -85,7 +115,6 @@ def compare_team(teams: List[str] = Query(None), compare_by: stat_options = stat
             * `assists`
             * `steals`
             * `blocks`
-            * `average three point percentage`
     '''
 
     if len(teams) < 2:
@@ -108,15 +137,13 @@ def compare_team(teams: List[str] = Query(None), compare_by: stat_options = stat
                                       db.games.c.ast_home,
                                       db.games.c.stl_home,
                                       db.games.c.blk_home,
-                                      db.games.c.three_p_percent_home,
                                       db.games.c.away,
                                       db.games.c.pts_away,
                                       db.games.c.winner,
                                       db.games.c.reb_away,
                                       db.games.c.ast_away,
                                       db.games.c.stl_away,
-                                      db.games.c.blk_away,
-                                      db.games.c.three_p_percent_away).where(
+                                      db.games.c.blk_away).where(
                 (row.team_id == db.games.c.home) | (row.team_id == db.games.c.away))
 
             games1 = conn.execute(games).fetchall()
@@ -126,7 +153,6 @@ def compare_team(teams: List[str] = Query(None), compare_by: stat_options = stat
             assists = 0
             steals = 0
             blocks = 0
-            average_three = 0
 
             for game in games1:
                 if game.winner == row.team_id:
@@ -137,14 +163,12 @@ def compare_team(teams: List[str] = Query(None), compare_by: stat_options = stat
                     assists += game.ast_home
                     steals += game.stl_home
                     blocks += game.blk_home
-                    average_three += game.three_p_percent_home
                 elif game.away == row.team_id:
                     points += game.pts_away
                     rebounds += game.reb_away
                     assists += game.ast_away
                     steals += game.stl_away
                     blocks += game.blk_away
-                    average_three += game.three_p_percent_away
 
             if compare_by == "wins":
                 stats_dict = {"Wins": wins}
@@ -158,8 +182,6 @@ def compare_team(teams: List[str] = Query(None), compare_by: stat_options = stat
                 stats_dict = {"Average steals per game": round((steals / 82), 2)}
             elif compare_by == "blocks":
                 stats_dict = {"Average blocks per game": round((blocks / 82), 2)}
-            elif compare_by == "average three point percentage":
-                stats_dict = {"Average three point percentage per game": round((average_three / 82), 2)}
 
             team_dict[f"Compare by {compare_by}"] = stats_dict
             json.append(team_dict)

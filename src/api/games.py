@@ -1,42 +1,10 @@
 from fastapi import APIRouter, HTTPException
-from enum import Enum
 import sqlalchemy
 from datetime import date
 from src import database as db
+from src.api.teams import team_options
 
 router = APIRouter()
-
-class team_options(str, Enum):
-    toronto_raptors = "Toronto Raptors"
-    memphis_grizzlies = "Memphis Grizzlies"
-    miami_heat = "Miami Heat"
-    utah_jazz = "Utah Jazz"
-    milwaukee_bucks = "Milwaukee Bucks"
-    cleveland_cavaliers = "Cleveland Cavaliers"
-    new_orleans_pelicans = "New Orleans Pelicans"
-    minnesota_timberwolves = "Minnesota Timberwolves"
-    orlando_magic = "Orlando Magic"
-    new_york_knicks = "New York Knicks"
-    washington_wizards = "Washington Wizards"
-    phoenix_suns = "Phoenix Suns"
-    detroit_pistons = "Detroit Pistons"
-    golden_state_warriors = "Golden State Warriors"
-    charlotte_hornets = "Charlotte Hornets"
-    san_antonio_spurs = "San Antonio Spurs"
-    sacramento_kings = "Sacramento Kings"
-    los_angeles_clippers = "Los Angeles Clippers"
-    oklahoma_city_thunder = "Oklahoma City Thunder"
-    dallas_mavericks = "Dallas Mavericks"
-    los_angeles_lakers = "Los Angeles Lakers"
-    indiana_pacers = "Indiana Pacers"
-    atlanta_hawks = "Atlanta Hawks"
-    chicago_bulls = "Chicago Bulls"
-    denver_nuggets = "Denver Nuggets"
-    boston_celtics = "Boston Celtics"
-    portland_trail_blazers = "Portland Trail Blazers"
-    philadelphia_76ers = "Philadelphia 76ers"
-    houston_rockets = "Houston Rockets"
-    brooklyn_nets = "Brooklyn Nets"
 
 
 @router.get("/games/", tags=["games"])
