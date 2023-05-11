@@ -28,7 +28,7 @@ def get_athlete(id: int, year = None):
         with db.engine.connect() as conn:
             res = conn.execute(stmt).fetchone()
             res1 = conn.execute(stmt1).fetchall()
-            if res is None or rest1 is None:
+            if res is None or rest is None:
                 raise HTTPException(status_code=404, detail="athlete not found.")
 
             games_played = 0
@@ -42,6 +42,7 @@ def get_athlete(id: int, year = None):
             blocks = 0
             points = 0
 
+            teams_set = 
             for row in res1:
                 games_played += row.games_played
                 minutes_played += row.minutes_played
@@ -55,23 +56,23 @@ def get_athlete(id: int, year = None):
                 points += row.points
 
             stats = {
-                "games_played": res.games_played,
-                "minutes_played": res.minutes_played,
-                "field_goal_percentage": res.field_goal_percentage,
-                "three_points_percentage": res.three_points_percentage,
-                "free_throw_percentage": res.free_throw_percentage,
-                "total_rebounds": res.total_rebounds,
-                "assists": res.assists,
-                "steals": res.steals,
-                "blocks": res.blocks,
-                "points": res.points
+                "games_played": round(games_played/len(res1), 1),
+                "minutes_played": round(minutes_played/len(res1), 1),
+                "field_goal_percentage": round(field_goal_percentage/len(res1), 1),
+                "three_points_percentage": round(three_points_percentage/len(res1), 1),
+                "free_throw_percentage": round(free_throw_percentage/len(res1), 1),
+                "total_rebounds": round(total_rebounds/len(res1), 1),
+                "assists": round(assists/len(res1), 1),
+                "steals": round(steals/len(res1), 1),
+                "blocks": round(blocks/len(res1), 1),
+                "points": round(points/len(res1), 1)
             }
 
             return {
                 "athlete_id": res.athlete_id,
                 "name": res.name,
-                "team_id": res.team_id,
-                "age": res.age,
+                "team_id": res1.team_id,
+                "age": res1[0].age,
                 "stats": stats
             }
     
