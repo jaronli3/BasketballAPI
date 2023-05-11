@@ -42,8 +42,10 @@ def get_athlete(id: int, year = None):
             blocks = 0
             points = 0
 
-            teams_set = 
+            teams_set = set()
+
             for row in res1:
+                teams_set.add(row.team_id)
                 games_played += row.games_played
                 minutes_played += row.minutes_played
                 field_goal_percentage += row.field_goal_percentage
@@ -71,11 +73,13 @@ def get_athlete(id: int, year = None):
             return {
                 "athlete_id": res.athlete_id,
                 "name": res.name,
-                "team_id": res1.team_id,
+                "team_id": team_set,
                 "age": res1[0].age,
                 "stats": stats
             }
-    
+    elif year is not None:
+        ...
+        
 class StatOptions(str, Enum):
     games_played = "games_played"
     minutes_played = "minutes_played"
