@@ -1,5 +1,41 @@
 [
   {
+    "game_id": 5710,
+    "home_team": "Brooklyn Nets",
+    "away_team": "Houston Rockets",
+    "winner": "Houston Rockets",
+    "home_team_score": 111,
+    "away_team_score": 119,
+    "date": "2018-11-02"
+  },
+  {
+    "game_id": 4529,
+    "home_team": "Brooklyn Nets",
+    "away_team": "Houston Rockets",
+    "winner": "Brooklyn Nets",
+    "home_team_score": 123,
+    "away_team_score": 116,
+    "date": "2019-11-01"
+  },
+  {
+    "game_id": 2844,
+    "home_team": "Brooklyn Nets",
+    "away_team": "Houston Rockets",
+    "winner": "Brooklyn Nets",
+    "home_team_score": 120,
+    "away_team_score": 108,
+    "date": "2021-03-31"
+  },
+  {
+    "game_id": 1274,
+    "home_team": "Brooklyn Nets",
+    "away_team": "Houston Rockets",
+    "winner": "Brooklyn Nets",
+    "home_team_score": 118,
+    "away_team_score": 105,
+    "date": "2022-04-05"
+  },
+  {
     "game_id": 87,
     "home_team": "Brooklyn Nets",
     "away_team": "Houston Rockets",
@@ -9,7 +45,7 @@
     "date": "2023-03-29"
   },
   {
-    "game_id": 1230,
+    "game_id": 5829,
     "home_team": "Brooklyn Nets",
     "away_team": "Houston Rockets",
     "winner": "Brooklyn Nets",

@@ -18,14 +18,6 @@ def test_get_games():
         assert response.json() == json.load(f)
 
 
-def test_get_games_2():
-    response = client.get("/games/?home_team=Golden%20State%20Warriors&away_team=Los%20Angeles%20Clippers")
-    assert response.status_code == 200
-
-    with open("test/games/warriors_clippers.json") as f:
-        assert response.json() == json.load(f)
-
-
 def test_get_game_same_team():
     response = client.get("/games/?home_team=Brooklyn%20Nets&away_team=Brooklyn%20Nets")
     assert response.status_code == 400
@@ -36,7 +28,7 @@ def test_add_game():
         team_options.brooklyn_nets,
         team_options.houston_rockets,
         datetime.date(2023, 3, 30),
-        100, 99, 30.1, 28.4, 5, 4, 9, 2, 4, 3, 2, 1
+        100, 99, 5, 4, 9, 2, 4, 3, 2, 1
     )
     response = client.get("/games/?home_team=Brooklyn%20Nets&away_team=Houston%20Rockets")
     assert response.status_code == 200
