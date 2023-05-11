@@ -11,7 +11,7 @@ router = APIRouter()
 
 
 @router.get("/athletes/{id}", tags=["athletes"])
-def get_athlete(id: int):
+def get_athlete(id: int, year = None):
     """ 
     This endpoint returns a single athlete by its identifier. For each athlete it returns:
     * `athlete_id`: The internal id of the athlete.
@@ -21,34 +21,59 @@ def get_athlete(id: int):
     * `stats`: a json returning some of the stats of the athlete
     * games_played, minutes_played, field_goal_percentage, three_point_percentage, free_throw_percentage, total_rebounds, assist, steals, blocks, points 
     """
+    if year is None:
+        stmt = (sqlalchemy.select(db.athletes).where(db.athletes.c.athlete_id == id))
+        stmt1 = sqlalchemy.select(db.athlete_stats).where(db.athlete_stats.c.athlete_id == id)
 
-    stmt = (sqlalchemy.select(db.athletes).where(db.athletes.c.athlete_id == id))
+        with db.engine.connect() as conn:
+            res = conn.execute(stmt).fetchone()
+            res1 = conn.execute(stmt1).fetchall()
+            if res is None or rest1 is None:
+                raise HTTPException(status_code=404, detail="athlete not found.")
 
-    with db.engine.connect() as conn:
-        res = conn.execute(stmt).fetchone()
-        if res is None:
-            raise HTTPException(status_code=404, detail="athlete not found.")
+            games_played = 0
+            minutes_played = 0
+            field_goal_percentage = 0
+            free_throw_percentage = 0
+            three_points_percentage = 0
+            total_rebounds = 0
+            assists = 0
+            steals = 0
+            blocks = 0
+            points = 0
 
-        stats = {
-            "games_played": res.games_played,
-            "minutes_played": res.minutes_played,
-            "field_goal_percentage": res.field_goal_percentage,
-            "three_points_percentage": res.three_points_percentage,
-            "free_throw_percentage": res.free_throw_percentage,
-            "total_rebounds": res.total_rebounds,
-            "assists": res.assists,
-            "steals": res.steals,
-            "blocks": res.blocks,
-            "points": res.points
-        }
+            for row in res1:
+                games_played += row.games_played
+                minutes_played += row.minutes_played
+                field_goal_percentage += row.field_goal_percentage
+                three_points_percentage += row.three_point_percentage
+                free_throw_percentage += row.free_throw_percentage
+                total_rebounds += row.total_rebounds
+                assists += row.assists
+                steals += row.steals
+                blocks += row.blocks
+                points += row.points
 
-        return {
-            "athlete_id": res.athlete_id,
-            "name": res.name,
-            "team_id": res.team_id,
-            "age": res.age,
-            "stats": stats
-        }
+            stats = {
+                "games_played": res.games_played,
+                "minutes_played": res.minutes_played,
+                "field_goal_percentage": res.field_goal_percentage,
+                "three_points_percentage": res.three_points_percentage,
+                "free_throw_percentage": res.free_throw_percentage,
+                "total_rebounds": res.total_rebounds,
+                "assists": res.assists,
+                "steals": res.steals,
+                "blocks": res.blocks,
+                "points": res.points
+            }
+
+            return {
+                "athlete_id": res.athlete_id,
+                "name": res.name,
+                "team_id": res.team_id,
+                "age": res.age,
+                "stats": stats
+            }
     
 class StatOptions(str, Enum):
     games_played = "games_played"
