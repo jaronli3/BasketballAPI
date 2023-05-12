@@ -8,35 +8,25 @@ client = TestClient(app)
 
 
 def test_get_teams1():
-    response = client.get("/teams/14")
+    response = client.get("/teams/Charlotte%20Hornets/2023")
     assert response.status_code == 200
     
-    with open("test/teams/14.json", encoding="utf-8") as f:
+    with open("test/teams/hornets_2023.json", encoding="utf-8") as f:
         assert response.json() == json.load(f)
     
 
 def test_get_teams2():
-    response = client.get("/teams/27")
+    response = client.get("/teams/Philadelphia%2076ers/2019")
     assert response.status_code == 200
     
-    with open("test/teams/27.json", encoding="utf-8") as f:
+    with open("test/teams/phili_2019.json", encoding="utf-8") as f:
         assert response.json() == json.load(f)
-    
+
 
 def test_compare_teams1():
     params = {
-        "teams": ["Portland Trail Blazers", "Golden State Warriors"],
-        "compare_by": "average three point percentage"
-    }
-
-    response = client.get("/teams/", params=params)
-
-    with open("test/teams/blazers_warriors.json", encoding="utf-8") as f:
-        assert response.json() == json.load(f)
-
-def test_compare_teams2():
-    params = {
-        "teams": ["Cleveland Cavaliers", "Boston Celtics"],
+        "team_1": "Cleveland Cavaliers",
+        "team_2": "Boston Celtics",
         "compare_by": "blocks"
     }
 
@@ -45,9 +35,11 @@ def test_compare_teams2():
     with open("test/teams/cavaliers_celtics.json", encoding="utf-8") as f:
         assert response.json() == json.load(f)
 
-def test_compare_teams3():
+
+def test_compare_teams2():
     params = {
-        "teams": ["Cleveland Cavaliers", "Utah Jazz"],
+        "team_1": "Cleveland Cavaliers",
+        "team_2": "Utah Jazz",
         "compare_by": "steals"
     }
 
@@ -56,9 +48,12 @@ def test_compare_teams3():
     with open("test/teams/cavaliers_jazz.json", encoding="utf-8") as f:
         assert response.json() == json.load(f)
 
-def test_compare_teams4():
+
+def test_compare_teams3():
     params = {
-        "teams": ["Los Angeles Clippers", "Golden State Warriors", "Boston Celtics"],
+        "team_1": "Los Angeles Clippers",
+        "team_2": "Golden State Warriors",
+        "team_3": "Boston Celtics",
         "compare_by": "wins"
     }
 
@@ -67,9 +62,11 @@ def test_compare_teams4():
     with open("test/teams/clippers_warriors_celtics.json", encoding="utf-8") as f:
         assert response.json() == json.load(f)
 
-def test_compare_teams5():
+
+def test_compare_teams4():
     params = {
-        "teams": ["Los Angeles Lakers", "Golden State Warriors"],
+        "team_1": "Los Angeles Lakers",
+        "team_2": "Golden State Warriors",
         "compare_by": "rebounds"
     }
 
@@ -78,9 +75,11 @@ def test_compare_teams5():
     with open("test/teams/lakers_warriors.json", encoding="utf-8") as f:
         assert response.json() == json.load(f)
 
-def test_compare_teams6():
+
+def test_compare_teams5():
     params = {
-        "teams": ["Dallas Mavericks", "Brooklyn Nets"],
+        "team_1": "Dallas Mavericks",
+        "team_2": "Brooklyn Nets",
         "compare_by": "assists"
     }
 
@@ -88,10 +87,14 @@ def test_compare_teams6():
 
     with open("test/teams/mavericks_nets.json", encoding="utf-8") as f:
         assert response.json() == json.load(f)
-    
-def test_compare_teams7():
+
+
+def test_compare_teams6():
     params = {
-        "teams": ["New Orleans Pelicans", "Charlotte Hornets", "Boston Celtics", "Houston Rockets"],
+        "team_1": "New Orleans Pelicans",
+        "team_2": "Charlotte Hornets",
+        "team_3": "Boston Celtics",
+        "team_4": "Houston Rockets",
         "compare_by": "points"
     }
 
@@ -99,8 +102,3 @@ def test_compare_teams7():
 
     with open("test/teams/pelicans_hornets_celtics_rockets.json", encoding="utf-8") as f:
         assert response.json() == json.load(f)
-
-
-def test_404():
-    response = client.get("/teams/30")
-    assert response.status_code == 404

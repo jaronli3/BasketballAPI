@@ -6,6 +6,7 @@ from fastapi.params import Query
 from src import database as db
 from typing import List, Dict
 import operator
+from sqlalchemy import extract
 
 
 router = APIRouter()
@@ -42,8 +43,9 @@ class team_options(str, Enum):
     houston_rockets = "Houston Rockets"
     brooklyn_nets = "Brooklyn Nets"
 
-@router.get("/teams/{team_id}", tags=["teams"])
-def get_team(team_id: int):
+
+@router.get("/teams/{team_name}/{year}", tags=["teams"])
+def get_team(team_name: team_options, year: int):
     """
     This endpoint returns a single team by its identifier. For each team it returns:
         *`team_id`: The internal id of the team
@@ -53,26 +55,27 @@ def get_team(team_id: int):
         *`Average Points for`: Average number of points the team scored
         *`Average Points allowed`: Average number of points team allowed
     """
+    if not(2019 <= year <= 2023):
+        raise HTTPException(status_code=400, detail="please enter a year within 2019 to 2023 (inclusive)")
 
     team = sqlalchemy.select(db.teams.c.team_id, db.teams.c.team_name, db.teams.c.team_abbrev).where(
-        db.teams.c.team_id == team_id)
+        db.teams.c.team_name == team_name)
 
     with db.engine.connect() as conn:
         result = conn.execute(team).fetchone()
+        team_id = result.team_id
         if result:
-            json = {"team_id": team_id, "team_name": result.team_name}
             games = sqlalchemy.select(db.games.c.home,
                                       db.games.c.away,
                                       db.games.c.pts_home,
                                       db.games.c.pts_away,
-                                      db.games.c.winner).where(
-                (team_id == db.games.c.home) | (team_id == db.games.c.away))
+                                      db.games.c.winner).where((
+                (team_id == db.games.c.home) | (team_id == db.games.c.away)) & (extract("year", db.games.c.date) == year))
+
 
             games_table = conn.execute(games).fetchall()
 
-            wins = 0
-            points_for = 0
-            points_allowed = 0
+            wins = points_for = points_allowed = 0
 
             for row in games_table:
                 if row.winner == team_id:
@@ -84,10 +87,8 @@ def get_team(team_id: int):
                     points_for += row.pts_away
                     points_allowed += row.pts_home
 
-            json["Wins"] = wins
-            json["Losses"] = 82 - wins
-            json["Average Points For"] = round((points_for / 82), 2)
-            json["Average Points Allowed"] = round((points_allowed / 82), 2)
+            json = {"team_id": team_id, "wins": wins, "losses": 82 - wins, "average points for": round((points_for / 82), 2),
+                    "average points allowed": round((points_allowed / 82), 2)}
 
             return json
 

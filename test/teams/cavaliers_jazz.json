@@ -1,16 +1,12 @@
 [
-    {
-      "team id": 3,
-      "team name": "Utah Jazz",
-      "Compare by steals": {
-        "Average steals per game": 6.1
-      }
-    },
-    {
-      "team id": 5,
-      "team name": "Cleveland Cavaliers",
-      "Compare by steals": {
-        "Average steals per game": 7.15
-      }
-    }
-  ]
+  {
+    "team id": 5,
+    "team name": "Cleveland Cavaliers",
+    "steals": 6.6
+  },
+  {
+    "team id": 3,
+    "team name": "Utah Jazz",
+    "steals": 6.5
+  }
+]

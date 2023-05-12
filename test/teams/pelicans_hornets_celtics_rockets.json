@@ -1,30 +1,22 @@
 [
-    {
-      "team id": 6,
-      "team name": "New Orleans Pelicans",
-      "Compare by points": {
-        "Average points per game": 114.37
-      }
-    },
-    {
-      "team id": 14,
-      "team name": "Charlotte Hornets",
-      "Compare by points": {
-        "Average points per game": 110.95
-      }
-    },
-    {
-      "team id": 25,
-      "team name": "Boston Celtics",
-      "Compare by points": {
-        "Average points per game": 117.94
-      }
-    },
-    {
-      "team id": 28,
-      "team name": "Houston Rockets",
-      "Compare by points": {
-        "Average points per game": 110.74
-      }
-    }
-  ]
+  {
+    "team id": 6,
+    "team name": "New Orleans Pelicans",
+    "points": 108.29
+  },
+  {
+    "team id": 25,
+    "team name": "Boston Celtics",
+    "points": 108.15
+  },
+  {
+    "team id": 28,
+    "team name": "Houston Rockets",
+    "points": 106.67
+  },
+  {
+    "team id": 14,
+    "team name": "Charlotte Hornets",
+    "points": 102.94
+  }
+]

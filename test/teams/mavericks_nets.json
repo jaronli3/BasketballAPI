@@ -1,16 +1,12 @@
 [
-    {
-      "team id": 19,
-      "team name": "Dallas Mavericks",
-      "Compare by assists": {
-        "Average assists per game": 22.93
-      }
-    },
-    {
-      "team id": 29,
-      "team name": "Brooklyn Nets",
-      "Compare by assists": {
-        "Average assists per game": 25.52
-      }
-    }
-  ]
+  {
+    "team id": 29,
+    "team name": "Brooklyn Nets",
+    "assists": 23.92
+  },
+  {
+    "team id": 19,
+    "team name": "Dallas Mavericks",
+    "assists": 22.47
+  }
+]

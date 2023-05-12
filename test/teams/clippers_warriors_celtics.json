@@ -1,23 +1,17 @@
 [
-    {
-      "team id": 13,
-      "team name": "Golden State Warriors",
-      "Compare by wins": {
-        "Wins": 44
-      }
-    },
-    {
-      "team id": 17,
-      "team name": "Los Angeles Clippers",
-      "Compare by wins": {
-        "Wins": 44
-      }
-    },
-    {
-      "team id": 25,
-      "team name": "Boston Celtics",
-      "Compare by wins": {
-        "Wins": 57
-      }
-    }
-  ]
+  {
+    "team id": 25,
+    "team name": "Boston Celtics",
+    "wins": 48.2
+  },
+  {
+    "team id": 17,
+    "team name": "Los Angeles Clippers",
+    "wins": 46
+  },
+  {
+    "team id": 13,
+    "team name": "Golden State Warriors",
+    "wins": 41.6
+  }
+]
