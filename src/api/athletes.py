@@ -76,6 +76,7 @@ class StatOptions(str, Enum):
     assists = "assists"
     steals = "steals"
     blocks = "blocks"
+    turnovers = "turnovers"
     points = "points"
 
 
@@ -120,58 +121,89 @@ def compare_athletes(
         return json
 
 
+@router.post("/athletes/", tags=["athletes"])
+def add_athlete(name: str):
+    """
+    This endpoint adds an athlete to the database.
+    To add stats of a season in which the athlete played, use add_athlete_stats.
+    The endpoint returns the id of the resulting athlete that was created
+    This endpoint ensures the athlete does not already exist in the database
+    """
+    stmt = sqlalchemy.select(
+        db.athletes.c.athlete_id
+    ).where(db.athletes.c.name == name)
+
+    with db.engine.connect() as conn:
+        result = conn.execute(stmt).fetchone()
+
+        if result:
+            raise HTTPException(status_code=400, detail="athlete already exists in database")
+
+        athlete_id = conn.execute(
+            sqlalchemy.select(
+                db.athletes.c.athlete_id
+            )
+            .order_by(sqlalchemy.desc(db.athletes.c.athlete_id))
+            .limit(1)
+        ).fetchone().athlete_id + 1
+
+        new_athlete = {
+            "athlete_id": athlete_id,
+            "name": name
+        }
+        conn.execute(db.athletes.insert().values(**new_athlete))
+        conn.commit()
+
+    return athlete_id
+
+
 class AthleteJson(BaseModel):
-    name: str
+    athlete_id: int
     age: int
-    team: int
+    year: int
+    team_id: int
     stats: Dict[StatOptions, float] = {}
 
 
 @router.post("/athletes/", tags=["athletes"])
-def add_athlete(athlete: AthleteJson):
+def add_athlete_season(athlete: AthleteJson):
     """
-    This endpoint adds an athlete to the database. The athlete is represented by the AthleteJson, which contains 
-    * name: the name of the athlete
-    * age: age of the athlete 
-    * team: the team id of the athlete’s team
-    * stats: a dictionary, matching StatOptions (such as "points") to values 
-    The endpoint returns the id of the resulting athlete that was created
+    This endpoint adds the stats from an athlete's season to the database.
+    The athlete is represented by the AthleteJson, which contains
+    * athlete_id: the internal id of the athlete
+    * age: age of the athlete
+    * team_id: the team id of the athlete’s team
+    * stats: a dictionary, matching StatOptions (such as "points") to values
+
+    This endpoints ensures that athlete_id exists in the database
+    The endpoint returns the name of the athlete
     """
+    athlete_name = sqlalchemy.select(db.athletes.c.name).where(db.athletes.c.athlete_id == id)
 
     with db.engine.connect() as conn:
-        team = conn.execute(
-            sqlalchemy.text("""SELECT * FROM teams WHERE teams.team_id = :x"""),
-            [{"x": athlete.team}]
-        ).fetchone()
-        if not team:
-            raise HTTPException(status_code=404, detail="team not found.")
+        athlete_name = conn.execute(athlete_name).fetchone().name
 
-        new_athlete_id = conn.execute(
-            sqlalchemy.text("""
-            SELECT athletes.athlete_id
-            FROM athletes
-            ORDER BY athlete_id DESC
-            LIMIT 1 
-            """)
-        ).fetchone().athlete_id + 1
+        if len(athlete_name) == 0:
+            raise HTTPException(status_code=404, detail="athlete does not exist in the database")
 
-        new_athlete = {
-            "athlete_id": new_athlete_id,
-            "name": athlete.name,
+        new_athlete_season = {
+            "athlete_id": athlete.athlete_id,
+            "year": athlete.year,
             "age": athlete.age,
-            "team_id": athlete.team,
+            "team_id": athlete.team_id,
             "games_played": athlete.stats.get("games_played", None),
             "minutes_played": athlete.stats.get("minutes_played", None),
             "field_goal_percentage": athlete.stats.get("field_goal_percentage", None),
-            "three_points_percentage": athlete.stats.get("three_points_percentage", None),
             "free_throw_percentage": athlete.stats.get("free_throw_percentage", None),
             "total_rebounds": athlete.stats.get("total_rebounds", None),
             "assists": athlete.stats.get("assists", None),
             "steals": athlete.stats.get("steals", None),
             "blocks": athlete.stats.get("blocks", None),
+            "turnovers": athlete.stats.get("turnovers", None),
             "points": athlete.stats.get("points", None)
         }
 
-        conn.execute(db.athletes.insert().values(**new_athlete))
+        conn.execute(db.athlete_stats.insert().values(**new_athlete_season))
         conn.commit()
-        return new_athlete_id
+
+    return athlete_name
