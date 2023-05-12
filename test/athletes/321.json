@@ -1,18 +1,51 @@
 {
-    "athlete_id": 321,
-    "name": "Damian Jones",
-    "team_id": 20,
-    "age": 27,
-    "stats": {
-      "games_played": 22,
-      "minutes_played": 176,
-      "field_goal_percentage": 0.541,
-      "three_points_percentage": 0,
-      "free_throw_percentage": 0.75,
-      "total_rebounds": 55,
-      "assists": 4,
-      "steals": 3,
-      "blocks": 12,
-      "points": 55
+  "athlete_id": 321,
+  "name": "Jaden McDaniels",
+  "stats": [
+    {
+      "year": 2021,
+      "age": 20,
+      "team_id": 7,
+      "team_name": "Minnesota Timberwolves",
+      "games_played": 63,
+      "minutes_played": 1511,
+      "field_goal_percentage": 0.447,
+      "free_throw_percentage": 0.6,
+      "total_rebounds": 232,
+      "assists": 71,
+      "steals": 35,
+      "blocks": 60,
+      "points": 427
+    },
+    {
+      "year": 2022,
+      "age": 21,
+      "team_id": 7,
+      "team_name": "Minnesota Timberwolves",
+      "games_played": 70,
+      "minutes_played": 1803,
+      "field_goal_percentage": 0.46,
+      "free_throw_percentage": 0.803,
+      "total_rebounds": 293,
+      "assists": 79,
+      "steals": 52,
+      "blocks": 54,
+      "points": 647
+    },
+    {
+      "year": 2023,
+      "age": 22,
+      "team_id": 7,
+      "team_name": "Minnesota Timberwolves",
+      "games_played": 79,
+      "minutes_played": 2416,
+      "field_goal_percentage": 0.517,
+      "free_throw_percentage": 0.736,
+      "total_rebounds": 307,
+      "assists": 148,
+      "steals": 74,
+      "blocks": 76,
+      "points": 953
     }
-  }
+  ]
+}
