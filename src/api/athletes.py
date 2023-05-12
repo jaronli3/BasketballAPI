@@ -11,75 +11,62 @@ router = APIRouter()
 
 
 @router.get("/athletes/{id}", tags=["athletes"])
-def get_athlete(id: int, year = None):
+def get_athlete(id: int,
+                year: int = None
+                ):
     """ 
     This endpoint returns a single athlete by its identifier. For each athlete it returns:
-    * `athlete_id`: The internal id of the athlete.
+    * `athlete_id`: The internal id of the athlete
     * `name`: The name of the athlete
-    * `team_id`: The team id the athlete plays for
-    * `age`: The age of the athlete
-    * `stats`: a json returning some of the stats of the athlete
-    * games_played, minutes_played, field_goal_percentage, three_point_percentage, free_throw_percentage, total_rebounds, assist, steals, blocks, points 
+
+    If the year argument is specified, the endpoint returns athlete stats for that year.
+    If the year argument is not specified, for each NBA season the athlete was a part of, the endpoint returns
+    the year and stats of the athlete for that season.
+
+    Athlete stats include:
+    age, team_id, team_name, games_played, minutes_played, field_goal_percentage, free_throw_percentage,
+    total_rebounds, assists, steals, blocks, points
     """
-    if year is None:
-        stmt = (sqlalchemy.select(db.athletes).where(db.athletes.c.athlete_id == id))
-        stmt1 = sqlalchemy.select(db.athlete_stats).where(db.athlete_stats.c.athlete_id == id)
 
-        with db.engine.connect() as conn:
-            res = conn.execute(stmt).fetchone()
-            res1 = conn.execute(stmt1).fetchall()
-            if res is None or res1 is None:
-                raise HTTPException(status_code=404, detail="athlete not found.")
+    athlete_name = sqlalchemy.select(db.athletes).where(db.athletes.c.athlete_id == id)
+    athlete_stats = sqlalchemy.select(db.athlete_stats).where(db.athlete_stats.c.athlete_id == id)
 
-            games_played = 0
-            minutes_played = 0
-            field_goal_percentage = 0
-            free_throw_percentage = 0
-            three_points_percentage = 0
-            total_rebounds = 0
-            assists = 0
-            steals = 0
-            blocks = 0
-            points = 0
+    if year:  # Filter if year argument is passed
+        athlete_stats = athlete_stats.where(db.athlete_stats.c.year == year)
 
-            teams_set = set()
+    with db.engine.connect() as conn:
+        athlete_name = conn.execute(athlete_name).fetchone()
+        athlete_stats = conn.execute(athlete_stats).fetchall()
+        if (not athlete_name) or (not athlete_stats):
+            raise HTTPException(status_code=404, detail="athlete not found for the given year.")
 
-            for row in res1:
-                teams_set.add(row.team_id)
-                games_played += row.games_played
-                minutes_played += row.minutes_played
-                field_goal_percentage += row.field_goal_percentage
-                three_points_percentage += row.three_point_percentage
-                free_throw_percentage += row.free_throw_percentage
-                total_rebounds += row.total_rebounds
-                assists += row.assists
-                steals += row.steals
-                blocks += row.blocks
-                points += row.points
+        stats = [{
+            "year": row.year,
+            "age": row.age,
+            "team_id": row.team_id,
+            "team_name": conn.execute(sqlalchemy.select(db.teams.c.team_name)
+                                      .where(db.teams.c.team_id == row.team_id)).fetchone().team_name,
+            "games_played": row.games_played,
+            "minutes_played": row.minutes_played,
+            "field_goal_percentage": row.field_goal_percentage,
+            "free_throw_percentage": row.free_throw_percentage,
+            "total_rebounds": row.total_rebounds,
+            "assists": row.assists,
+            "steals": row.steals,
+            "blocks": row.blocks,
+            "points": row.points
+        }
+            for row in athlete_stats]
 
-            stats = {
-                "games_played": round(games_played/len(res1), 1),
-                "minutes_played": round(minutes_played/len(res1), 1),
-                "field_goal_percentage": round(field_goal_percentage/len(res1), 1),
-                "three_points_percentage": round(three_points_percentage/len(res1), 1),
-                "free_throw_percentage": round(free_throw_percentage/len(res1), 1),
-                "total_rebounds": round(total_rebounds/len(res1), 1),
-                "assists": round(assists/len(res1), 1),
-                "steals": round(steals/len(res1), 1),
-                "blocks": round(blocks/len(res1), 1),
-                "points": round(points/len(res1), 1)
-            }
+        json = {
+            "athlete_id": id,
+            "name": athlete_name.name,
+            "stats": stats
+        }
 
-            return {
-                "athlete_id": res.athlete_id,
-                "name": res.name,
-                "team_id": team_set,
-                "age": res1[0].age,
-                "stats": stats
-            }
-    elif year is not None:
-        ...
-        
+        return json
+
+
 class StatOptions(str, Enum):
     games_played = "games_played"
     minutes_played = "minutes_played"
@@ -91,12 +78,13 @@ class StatOptions(str, Enum):
     steals = "steals"
     blocks = "blocks"
     points = "points"
-    
+
+
 @router.get("/athletes/", tags=["athletes"])
 def compare_athletes(
-    athlete_names: List[str] = Query(None),
-    stat: StatOptions = StatOptions.points
-    ):
+        athlete_names: List[str] = Query(None),
+        stat: StatOptions = StatOptions.points
+):
     """ 
     This endpoint returns a comparison between the specified athletes, 
     and returns the athlete id, name, and stat as specified in the input.  
@@ -104,14 +92,14 @@ def compare_athletes(
     * `athlete_names`: list of athlete names to compare (must have length >1)
     * `stat`: stat to compare athletes by (defaults to points)
     """
-    
+
     if len(athlete_names) < 2:
         raise HTTPException(status_code=400, detail="athlete list given does not contain enough althletes.")
 
     stmt = (
         sqlalchemy.select(db.athletes.c.athlete_id, db.athletes.c.name, sqlalchemy.column(stat).label('stat'))
-        .where(sqlalchemy.column('name').in_(athlete_names))
-        .order_by(sqlalchemy.column(stat))
+            .where(sqlalchemy.column('name').in_(athlete_names))
+            .order_by(sqlalchemy.column(stat))
     )
 
     with db.engine.connect() as conn:
@@ -133,12 +121,12 @@ def compare_athletes(
 class AthleteJson(BaseModel):
     name: str
     age: int
-    team: int 
+    team: int
     stats: Dict[StatOptions, float] = {}
 
 
 @router.post("/athletes/", tags=["athletes"])
-def add_athlete(athlete: AthleteJson): 
+def add_athlete(athlete: AthleteJson):
     """
     This endpoint adds an athlete to the database. The athlete is represented by the AthleteJson, which contains 
     * name: the name of the athlete
@@ -150,12 +138,12 @@ def add_athlete(athlete: AthleteJson):
 
     with db.engine.connect() as conn:
         team = conn.execute(
-            sqlalchemy.text("""SELECT * FROM teams WHERE teams.team_id = :x"""), 
+            sqlalchemy.text("""SELECT * FROM teams WHERE teams.team_id = :x"""),
             [{"x": athlete.team}]
         ).fetchone()
         if not team:
             raise HTTPException(status_code=404, detail="team not found.")
-        
+
         new_athlete_id = conn.execute(
             sqlalchemy.text("""
             SELECT athletes.athlete_id
@@ -181,7 +169,7 @@ def add_athlete(athlete: AthleteJson):
             "blocks": athlete.stats.get("blocks", None),
             "points": athlete.stats.get("points", None)
         }
-            
+
         conn.execute(db.athletes.insert().values(**new_athlete))
         conn.commit()
         return new_athlete_id
