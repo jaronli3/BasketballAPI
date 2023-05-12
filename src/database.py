@@ -16,11 +16,10 @@ def database_connection_url():
 # Create a new DB engine based on our connection string
 engine = create_engine(database_connection_url())
 
-with engine.begin() as conn:
-    metadata_obj = sqlalchemy.MetaData()
-    
-    athletes = sqlalchemy.Table("athletes", metadata_obj, autoload_with=engine)
-    games = sqlalchemy.Table("games", metadata_obj, autoload_with=engine)
-    teams = sqlalchemy.Table("teams", metadata_obj, autoload_with=engine)
-    athlete_stats = sqlalchemy.Table("athlete_stats", metadata_obj, autoload_with=engine)
 
+metadata_obj = sqlalchemy.MetaData()
+
+athletes = sqlalchemy.Table("athletes", metadata_obj, autoload_with=engine)
+games = sqlalchemy.Table("games", metadata_obj, autoload_with=engine)
+teams = sqlalchemy.Table("teams", metadata_obj, autoload_with=engine)
+athlete_stats = sqlalchemy.Table("athlete_stats", metadata_obj, autoload_with=engine)
