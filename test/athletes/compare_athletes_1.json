@@ -1,17 +1,27 @@
 [
-    {
-      "athlete_id": 14,
-      "name": "Cole Anthony",
-      "points": 781
-    },
-    {
-      "athlete_id": 306,
-      "name": "LeBron James",
-      "points": 1590
-    },
-    {
-      "athlete_id": 139,
-      "name": "Stephen Curry",
-      "points": 1648
-    }
-  ]
+  {
+    "athlete_id": 2,
+    "name": "Bam Adebayo",
+    "points": 1529
+  },
+  {
+    "athlete_id": 4,
+    "name": "Santi Aldama",
+    "points": 696
+  },
+  {
+    "athlete_id": 0,
+    "name": "Precious Achiuwa",
+    "points": 508
+  },
+  {
+    "athlete_id": 3,
+    "name": "Ochai Agbaji",
+    "points": 467
+  },
+  {
+    "athlete_id": 1,
+    "name": "Steven Adams",
+    "points": 361
+  }
+]

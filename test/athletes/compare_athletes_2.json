@@ -1,17 +1,27 @@
 [
-    {
-      "athlete_id": 306,
-      "name": "LeBron James",
-      "games_played": 55
-    },
-    {
-      "athlete_id": 139,
-      "name": "Stephen Curry",
-      "games_played": 56
-    },
-    {
-      "athlete_id": 14,
-      "name": "Cole Anthony",
-      "games_played": 60
-    }
-  ]
+  {
+    "athlete_id": 154,
+    "name": "Wenyen Gabriel",
+    "games_played": 68
+  },
+  {
+    "athlete_id": 233,
+    "name": "Isaiah Jackson",
+    "games_played": 63
+  },
+  {
+    "athlete_id": 192,
+    "name": "Montrezl Harrell",
+    "games_played": 57
+  },
+  {
+    "athlete_id": 184,
+    "name": "Rui Hachimura",
+    "games_played": 30
+  },
+  {
+    "athlete_id": 200,
+    "name": "Udonis Haslem",
+    "games_played": 7
+  }
+]

@@ -71,7 +71,6 @@ class StatOptions(str, Enum):
     games_played = "games_played"
     minutes_played = "minutes_played"
     field_goal_percentage = "field_goal_percentage"
-    three_points_percentage = "three_points_percentage"
     free_throw_percentage = "free_throw_percentage"
     total_rebounds = "total_rebounds"
     assists = "assists"
@@ -82,35 +81,38 @@ class StatOptions(str, Enum):
 
 @router.get("/athletes/", tags=["athletes"])
 def compare_athletes(
-        athlete_names: List[str] = Query(None),
-        stat: StatOptions = StatOptions.points
+        year: int,
+        athlete_ids: List[int] = Query(None),
+        stat: StatOptions = StatOptions.points,
 ):
     """ 
     This endpoint returns a comparison between the specified athletes, 
     and returns the athlete id, name, and stat as specified in the input.  
-    It allows the user to compare athletes by a stat in `StatOptions` 
-    * `athlete_names`: list of athlete names to compare (must have length >1)
+    It allows the user to compare athletes by a stat in `StatOptions`
+    * `year`: the year to compare the athletes
+    * `athlete_ids`: list of athlete names to compare (must have length >1)
     * `stat`: stat to compare athletes by (defaults to points)
     """
 
-    if len(athlete_names) < 2:
-        raise HTTPException(status_code=400, detail="athlete list given does not contain enough althletes.")
+    if len(athlete_ids) < 2:
+        raise HTTPException(status_code=400, detail="athlete list given does not contain enough athletes.")
 
-    stmt = (
-        sqlalchemy.select(db.athletes.c.athlete_id, db.athletes.c.name, sqlalchemy.column(stat).label('stat'))
-            .where(sqlalchemy.column('name').in_(athlete_names))
-            .order_by(sqlalchemy.column(stat))
+    athlete_stats = (
+        sqlalchemy.select(db.athlete_stats.c.athlete_id, sqlalchemy.column(stat).label('stat'))
+            .where((sqlalchemy.column('athlete_id').in_(athlete_ids)) & (db.athlete_stats.c.year == year))
+            .order_by(sqlalchemy.desc(sqlalchemy.column(stat)))
     )
 
     with db.engine.connect() as conn:
-        result = conn.execute(stmt)
+        result = conn.execute(athlete_stats)
 
         json = []
         for row in result.fetchall():
             json.append(
                 {
                     "athlete_id": row.athlete_id,
-                    "name": row.name,
+                    "name": conn.execute(sqlalchemy.select(db.athletes.c.name)
+                                      .where(db.athletes.c.athlete_id == row.athlete_id)).fetchone().name,
                     stat: row.stat
                 }
             )
