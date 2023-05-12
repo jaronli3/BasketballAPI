@@ -1,6 +1,9 @@
 from fastapi.testclient import TestClient
+from fastapi import APIRouter, HTTPException
 
 from src.api.server import app
+from src.api.athletes import AthleteStats, AthleteJson, add_athlete, add_athlete_season
+from src import database as db
 
 import json
 
@@ -41,44 +44,62 @@ def test_compare_athletes_400():
 
 
 def test_add_athlete():
-    athlete_data = {
-        "name": "Bob Ben",
-        "age": 199,
-        "team": 4,
-        "stats": {
-            "games_played": 1,
-            "points": 200,
-            "blocks": 2
-        }
-    }
-    response = client.post("/athletes/", json=athlete_data)
-    assert response.status_code == 200
+    with db.engine.connect() as conn:
+        athlete_id = add_athlete("Test Athlete")
+        stats = AthleteStats(games_played=0, minutes_played=0, field_goal_percentage=0.0,
+                             free_throw_percentage=0.0, total_rebounds=0, assists=0, steals=0, blocks=0, turnovers=0, points=0)
+        athlete_json = AthleteJson(athlete_id=athlete_id, age=0, year=2023, team_id=0, stats=stats)
+        add_athlete_season(athlete_json)
 
-    athlete_response = client.get("/athletes/" + response.content.decode('utf-8'))
-    assert athlete_response.status_code == 200
+        response = client.get("/athletes/" + str(athlete_id))
+        assert response.status_code == 200
+
+        with open("test/athletes/test_add_athlete.json", encoding="utf-8") as f:
+            assert response.json() == json.load(f)
+
+        conn.execute(
+            db.athletes.delete().where(db.athletes.c.athlete_id == athlete_id)
+        )
+        conn.execute(
+            db.athlete_stats.delete().where(db.athlete_stats.c.athlete_id == athlete_id)
+        )
+
+        conn.commit()
 
 
-def test_add_athlete_2():
-    athlete_data = {
-        "name": "New Athlete Name",
-        "age": 55,
-        "team": 10,
-        "stats": {
-        }
-    }
-    response = client.post("/athletes/", json=athlete_data)
-    assert response.status_code == 200
+def test_add_athlete_400():
+    try:
+        add_athlete(name="Stephen Curry")
+        assert False
+    except HTTPException:
+        pass
 
-    athlete_response = client.get("/athletes/" + response.content.decode('utf-8'))
-    assert athlete_response.status_code == 200
 
-def test_add_athlete_404():
-    athlete_data = {
-        "name": "New Athlete Name",
-        "age": 55,
-        "team": 200,
-        "stats": {
-        }
-    }
-    response = client.post("/athletes/", json=athlete_data)
-    assert response.status_code == 404
+def test_add_season_errors():
+    stats = AthleteStats(games_played=0, minutes_played=0, field_goal_percentage=0.0,
+                         free_throw_percentage=0.0, total_rebounds=0, assists=0, steals=0, blocks=0, turnovers=0,
+                         points=0)
+    # Invalid athlete_id
+    athlete_json = AthleteJson(athlete_id=100001, age=0, year=2023, team_id=0, stats=stats)
+    try:
+        add_athlete_season(athlete_json)
+        assert False
+    except HTTPException:
+        pass
+
+    # Invalid team_id
+    athlete_json = AthleteJson(athlete_id=0, age=0, year=2023, team_id=100, stats=stats)
+    try:
+        add_athlete_season(athlete_json)
+        assert False
+    except HTTPException:
+        pass
+
+    # Athlete year pair already exists
+    athlete_json = AthleteJson(athlete_id=0, age=0, year=2023, team_id=0, stats=stats)
+    try:
+        add_athlete_season(athlete_json)
+        assert False
+    except HTTPException:
+        pass
+

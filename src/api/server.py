@@ -4,7 +4,7 @@ from src.api import pkg_util
 
 description = """
 Get all the information and analytical insight 
-you need about the 2023 NBA regular season.
+you need about the NBA regular season from 2019 through 2023.
 """
 
 tags_metadata = [

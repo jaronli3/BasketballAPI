@@ -157,15 +157,28 @@ def add_athlete(name: str):
     return athlete_id
 
 
+class AthleteStats(BaseModel):
+    games_played: int
+    minutes_played: int
+    field_goal_percentage: float
+    free_throw_percentage: float
+    total_rebounds: int
+    assists: int
+    steals: int
+    blocks: int
+    turnovers: int
+    points: int
+
+
 class AthleteJson(BaseModel):
     athlete_id: int
     age: int
     year: int
     team_id: int
-    stats: Dict[StatOptions, float] = {}
+    stats: AthleteStats
 
 
-@router.post("/athletes/", tags=["athletes"])
+@router.post("/athletes/season", tags=["athletes"])
 def add_athlete_season(athlete: AthleteJson):
     """
     This endpoint adds the stats from an athlete's season to the database.
@@ -175,35 +188,64 @@ def add_athlete_season(athlete: AthleteJson):
     * team_id: the team id of the athlete’s team
     * stats: a dictionary, matching StatOptions (such as "points") to values
 
-    This endpoints ensures that athlete_id exists in the database
+    This endpoints ensures that athlete_id and team_id exists in the database, and that
+    the athlete year pair does not already exist in the database
     The endpoint returns the name of the athlete
     """
-    athlete_name = sqlalchemy.select(db.athletes.c.name).where(db.athletes.c.athlete_id == id)
+
+    if not(2019 <= athlete.year <= 2023):
+        raise HTTPException(status_code=400, detail="please enter a year within 2019 to 2023 (inclusive)")
+
+    athlete_name = sqlalchemy.select(db.athletes.c.name).where(db.athletes.c.athlete_id == athlete.athlete_id)
+    team_name = sqlalchemy.select(db.teams.c.team_name).where(db.teams.c.team_id == athlete.team_id)
+
+    athlete_year = sqlalchemy.select(
+        db.athlete_stats.c.athlete_id
+    ).where((db.athlete_stats.c.athlete_id == athlete.athlete_id) & (db.athlete_stats.c.year == athlete.year))
 
     with db.engine.connect() as conn:
-        athlete_name = conn.execute(athlete_name).fetchone().name
+        athlete_name = conn.execute(athlete_name).fetchone()
 
-        if len(athlete_name) == 0:
+        team_name = conn.execute(team_name).fetchone()
+
+        athlete_year = conn.execute(athlete_year).fetchone()
+
+        if not athlete_name:
             raise HTTPException(status_code=404, detail="athlete does not exist in the database")
+
+        if not team_name:
+            raise HTTPException(status_code=404, detail="team does not exist in the database")
+
+        if athlete_year:
+            raise HTTPException(status_code=400, detail="athlete year pair already exists in the database")
 
         new_athlete_season = {
             "athlete_id": athlete.athlete_id,
             "year": athlete.year,
             "age": athlete.age,
             "team_id": athlete.team_id,
-            "games_played": athlete.stats.get("games_played", None),
-            "minutes_played": athlete.stats.get("minutes_played", None),
-            "field_goal_percentage": athlete.stats.get("field_goal_percentage", None),
-            "free_throw_percentage": athlete.stats.get("free_throw_percentage", None),
-            "total_rebounds": athlete.stats.get("total_rebounds", None),
-            "assists": athlete.stats.get("assists", None),
-            "steals": athlete.stats.get("steals", None),
-            "blocks": athlete.stats.get("blocks", None),
-            "turnovers": athlete.stats.get("turnovers", None),
-            "points": athlete.stats.get("points", None)
+            "games_played": athlete.stats.games_played,
+            "minutes_played": athlete.stats.minutes_played,
+            "field_goal_percentage": athlete.stats.field_goal_percentage,
+            "free_throw_percentage": athlete.stats.free_throw_percentage,
+            "total_rebounds": athlete.stats.total_rebounds,
+            "assists": athlete.stats.assists,
+            "steals": athlete.stats.steals,
+            "blocks": athlete.stats.blocks,
+            "turnovers": athlete.stats.turnovers,
+            "points": athlete.stats.points
         }
 
         conn.execute(db.athlete_stats.insert().values(**new_athlete_season))
         conn.commit()
 
-    return athlete_name
+    return athlete_name.name
+
+
+# stats = AthleteStats(games_played=0, minutes_played=0, field_goal_percentage=0,
+#                      free_throw_percentage=0, total_rebounds=0, assists=0, steals=0, blocks=0, turnovers=0, points=0)
+# athlete_json = AthleteJson(athlete_id=969, age=0, year=2023, team_id=0, stats=stats)
+#
+#
+#
+# print(add_athlete_season(athlete_json))

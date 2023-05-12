@@ -1,0 +1,21 @@
+{
+  "athlete_id": 969,
+  "name": "Test Athlete",
+  "stats": [
+    {
+      "year": 2023,
+      "age": 0,
+      "team_id": 0,
+      "team_name": "Toronto Raptors",
+      "games_played": 0,
+      "minutes_played": 0,
+      "field_goal_percentage": 0,
+      "free_throw_percentage": 0,
+      "total_rebounds": 0,
+      "assists": 0,
+      "steals": 0,
+      "blocks": 0,
+      "points": 0
+    }
+  ]
+}
