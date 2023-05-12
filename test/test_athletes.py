@@ -5,7 +5,7 @@ from src.api.server import app
 import json
 
 client = TestClient(app)
-prefix="/Users/zach/Desktop/CSC_365/Project/"
+
 
 def test_get_athlete():
     response = client.get("/athletes/321")
