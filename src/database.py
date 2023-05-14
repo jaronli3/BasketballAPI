@@ -5,7 +5,6 @@ import sqlalchemy
 
 def database_connection_url():
     dotenv.load_dotenv()
-    DB_PASSWD = os.environ.get("POSTGRES_PASSWORD")
     DB_USER: str = os.environ.get("POSTGRES_USER")
     DB_PASSWD = os.environ.get("POSTGRES_PASSWORD")
     DB_SERVER: str = os.environ.get("POSTGRES_SERVER")
