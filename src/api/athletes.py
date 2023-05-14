@@ -11,11 +11,11 @@ router = APIRouter()
 
 
 @router.get("/athletes/{id}", tags=["athletes"])
-def get_athlete(id: str,
+def get_athlete(id: int,
                 year: int = None
                 ):
     """ 
-    This endpoint returns a single athlete by its identifier OR name. For each athlete it returns:
+    This endpoint returns a single athlete by its identifier. For each athlete it returns:
     * `athlete_id`: The internal id of the athlete
     * `name`: The name of the athlete
 
@@ -27,26 +27,17 @@ def get_athlete(id: str,
     age, team_id, team_name, games_played, minutes_played, field_goal_percentage, free_throw_percentage,
     total_rebounds, assists, steals, blocks, points
     """
+    athlete_name = sqlalchemy.select(db.athletes).where(db.athletes.c.athlete_id == id)
+    athlete_stats = sqlalchemy.select(db.athlete_stats).where(db.athlete_stats.c.athlete_id == id)
+
+    if year:  # Filter if year argument is passed
+        athlete_stats = athlete_stats.where(db.athlete_stats.c.year == year)
 
     with db.engine.connect() as conn:
 
-        try:
-            id = int(id)
-        except ValueError:  # True string provided
-            id = conn.execute(sqlalchemy.select(db.athletes.c.athlete_id).where(db.athletes.c.name == id)).fetchone()
-            if not id:
-                raise HTTPException(status_code=404, detail="athlete not found")
-            id = id.athlete_id
-
-        athlete_name = sqlalchemy.select(db.athletes).where(db.athletes.c.athlete_id == id)
-        athlete_stats = sqlalchemy.select(db.athlete_stats).where(db.athlete_stats.c.athlete_id == id)
-
-        if year:  # Filter if year argument is passed
-            athlete_stats = athlete_stats.where(db.athlete_stats.c.year == year)
-
         athlete_name = conn.execute(athlete_name).fetchone()
         athlete_stats = conn.execute(athlete_stats).fetchall()
-        if (not athlete_name) or (not athlete_stats):
+        if not athlete_name:
             raise HTTPException(status_code=404, detail="athlete not found for the given year.")
 
         stats = [{
