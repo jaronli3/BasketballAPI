@@ -38,7 +38,7 @@ def get_athlete(id: int,
         athlete_name = conn.execute(athlete_name).fetchone()
         athlete_stats = conn.execute(athlete_stats).fetchall()
         if not athlete_name:
-            raise HTTPException(status_code=404, detail="athlete not found for the given year.")
+            raise HTTPException(status_code=404, detail="athlete not found.")
 
         stats = [{
             "year": row.year,
