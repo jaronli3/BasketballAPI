@@ -3,6 +3,8 @@ import sqlalchemy
 from datetime import date
 from src import database as db
 from src.api.teams import team_options
+from pydantic import BaseModel
+
 
 router = APIRouter()
 
@@ -68,22 +70,23 @@ def get_game(
         return json
 
 
+class GameJson(BaseModel):
+    home_team: team_options
+    away_team: team_options
+    date: date
+    points_home: int
+    points_away: int
+    rebounds_home: int
+    rebounds_away: int
+    assists_home: int
+    assists_away: int
+    steals_home: int
+    steals_away: int
+    blocks_home: int
+    blocks_away: int
+
 @router.post("/games/add_game", tags=["games"])
-def add_game(
-        home_team: team_options,
-        away_team: team_options,
-        date: date,
-        points_home: int,
-        points_away: int,
-        rebounds_home: int,
-        rebounds_away: int,
-        assists_home: int,
-        assists_away: int,
-        steals_home: int,
-        steals_away: int,
-        blocks_home: int,
-        blocks_away: int
-):
+def add_game(game: GameJson):
     """
     This endpoint adds a game to the database. The game is represented by:
         * `home_team_id`: the id of the home team
@@ -93,7 +96,7 @@ def add_game(
 
     The endpoint returns the id of the game created
     """
-    if home_team == away_team:
+    if game.home_team == game.away_team:
         raise HTTPException(status_code=400, detail="Teams are the same")
 
     with db.engine.connect() as conn:
@@ -108,31 +111,31 @@ def add_game(
         home_team_id = conn.execute(
             sqlalchemy.select(
                 db.teams.c.team_id
-            ).where(db.teams.c.team_name == home_team)
+            ).where(db.teams.c.team_name == game.home_team)
         ).fetchone().team_id
 
         away_team_id = conn.execute(
             sqlalchemy.select(
                 db.teams.c.team_id
-            ).where(db.teams.c.team_name == away_team)
+            ).where(db.teams.c.team_name == game.away_team)
         ).fetchone().team_id
 
         game = {
             "game_id": game_id,
             "home": home_team_id,
             "away": away_team_id,
-            "winner": home_team_id if points_home > points_away else away_team_id,
+            "winner": home_team_id if game.points_home > game.points_away else away_team_id,
             "date": date,
-            "pts_home": points_home,
-            "pts_away": points_away,
-            "reb_home": rebounds_home,
-            "reb_away": rebounds_away,
-            "ast_home": assists_home,
-            "ast_away": assists_away,
-            "stl_home": steals_home,
-            "stl_away": steals_away,
-            "blk_home": blocks_home,
-            "blk_away": blocks_away
+            "pts_home": game.points_home,
+            "pts_away": game.points_away,
+            "reb_home": game.rebounds_home,
+            "reb_away": game.rebounds_away,
+            "ast_home": game.assists_home,
+            "ast_away": game.assists_away,
+            "stl_home": game.steals_home,
+            "stl_away": game.steals_away,
+            "blk_home": game.blocks_home,
+            "blk_away": game.blocks_away
         }
         conn.execute(db.games.insert().values(**game))
         conn.commit()
