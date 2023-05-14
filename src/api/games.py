@@ -72,17 +72,17 @@ def get_game(
 def add_game(
         home_team: team_options,
         away_team: team_options,
-        date: date = None,
-        points_home: int = None,
-        points_away: int = None,
-        rebounds_home: int = None,
-        rebounds_away: int = None,
-        assists_home: int = None,
-        assists_away: int = None,
-        steals_home: int = None,
-        steals_away: int = None,
-        blocks_home: int = None,
-        blocks_away: int = None
+        date: date,
+        points_home: int,
+        points_away: int,
+        rebounds_home: int,
+        rebounds_away: int,
+        assists_home: int,
+        assists_away: int,
+        steals_home: int,
+        steals_away: int,
+        blocks_home: int,
+        blocks_away: int
 ):
     """
     This endpoint adds a game to the database. The game is represented by:
