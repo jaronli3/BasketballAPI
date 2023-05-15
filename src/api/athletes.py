@@ -27,25 +27,26 @@ def get_athlete(id: int,
     age, team_id, team_name, games_played, minutes_played, field_goal_percentage, free_throw_percentage,
     total_rebounds, assists, steals, blocks, points
     """
-    athlete_name = sqlalchemy.select(db.athletes).where(db.athletes.c.athlete_id == id)
-    athlete_stats = sqlalchemy.select(db.athlete_stats).where(db.athlete_stats.c.athlete_id == id)
 
-    if year:  # Filter if year argument is passed
-        athlete_stats = athlete_stats.where(db.athlete_stats.c.year == year)
+    athlete = sqlalchemy.select(db.athlete_stats, db.athletes, db.teams).select_from(
+        db.athletes.join(db.athlete_stats, isouter=True).join(db.teams, isouter=True)
+    ).where(db.athlete_stats.c.athlete_id == id)
 
     with db.engine.connect() as conn:
+        name = conn.execute(athlete).fetchone()
 
-        athlete_name = conn.execute(athlete_name).fetchone()
-        athlete_stats = conn.execute(athlete_stats).fetchall()
-        if not athlete_name:
+        if not name:
             raise HTTPException(status_code=404, detail="athlete not found.")
 
+        if year:  # Filter if year argument is passed
+            athlete = athlete.where(db.athlete_stats.c.year == year)
+
+        athlete = conn.execute(athlete).fetchall()
         stats = [{
             "year": row.year,
             "age": row.age,
             "team_id": row.team_id,
-            "team_name": conn.execute(sqlalchemy.select(db.teams.c.team_name)
-                                      .where(db.teams.c.team_id == row.team_id)).fetchone().team_name,
+            "team_name": row.team_name,
             "games_played": row.games_played,
             "minutes_played": row.minutes_played,
             "field_goal_percentage": row.field_goal_percentage,
@@ -56,11 +57,11 @@ def get_athlete(id: int,
             "blocks": row.blocks,
             "points": row.points
         }
-            for row in athlete_stats]
+            for row in athlete]
 
         json = {
             "athlete_id": id,
-            "name": athlete_name.name,
+            "name": name.name,
             "stats": stats
         }
 
