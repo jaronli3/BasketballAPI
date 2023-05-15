@@ -27,23 +27,23 @@ def get_athlete(id: int,
     age, team_id, team_name, games_played, minutes_played, field_goal_percentage, free_throw_percentage,
     total_rebounds, assists, steals, blocks, points
     """
-    if not(2019 <= year <= 2023):
+    if year and not(2019 <= year <= 2023):  # Short circuit
         raise HTTPException(status_code=400, detail="please enter a year within 2019 to 2023 (inclusive)")
 
-    athlete = sqlalchemy.select(db.athlete_stats, db.athletes, db.teams).select_from(
+    athlete_stmt = sqlalchemy.select(db.athlete_stats, db.athletes, db.teams).select_from(
         db.athletes.join(db.athlete_stats, isouter=True).join(db.teams, isouter=True)
     ).where(db.athlete_stats.c.athlete_id == id)
 
     with db.engine.connect() as conn:
-        name = conn.execute(athlete).fetchone()
+        name = conn.execute(athlete_stmt).fetchone()
 
         if not name:
             raise HTTPException(status_code=404, detail="athlete not found.")
 
         if year:  # Filter if year argument is passed
-            athlete = athlete.where(db.athlete_stats.c.year == year)
+            athlete_stmt = athlete_stmt.where(db.athlete_stats.c.year == year)
 
-        athlete = conn.execute(athlete).fetchall()
+        athlete = conn.execute(athlete_stmt).fetchall()
         stats = [{
             "year": row.year,
             "age": row.age,
