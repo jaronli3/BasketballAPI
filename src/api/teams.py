@@ -150,12 +150,7 @@ def compare_team(team_1: team_options,
                 (row.team_id == db.games.c.home) | (row.team_id == db.games.c.away))
 
             games1 = conn.execute(games).fetchall()
-            wins = 0
-            points = 0
-            rebounds = 0
-            assists = 0
-            steals = 0
-            blocks = 0
+            wins = points = rebounds = assists = steals = blocks = 0
 
             for game in games1:
                 if game.winner == row.team_id:
