@@ -133,7 +133,7 @@ def compare_team(team_1: team_options,
         json = []
         for row in result:
             team_dict = {"team id": row.team_id, "team name": row.team_name}
-            games = sqlalchemy.select(db.games.c.home,
+            games_stmt = sqlalchemy.select(db.games.c.home,
                                       db.games.c.pts_home,
                                       db.games.c.winner,
                                       db.games.c.reb_home,
@@ -149,10 +149,10 @@ def compare_team(team_1: team_options,
                                       db.games.c.blk_away).where(
                 (row.team_id == db.games.c.home) | (row.team_id == db.games.c.away))
 
-            games1 = conn.execute(games).fetchall()
+            games = conn.execute(games_stmt).fetchall()
             wins = points = rebounds = assists = steals = blocks = 0
 
-            for game in games1:
+            for game in games:
                 if game.winner == row.team_id:
                     wins += 1
                 if game.home == row.team_id:
