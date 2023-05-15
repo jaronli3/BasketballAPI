@@ -27,6 +27,8 @@ def get_athlete(id: int,
     age, team_id, team_name, games_played, minutes_played, field_goal_percentage, free_throw_percentage,
     total_rebounds, assists, steals, blocks, points
     """
+    if not(2019 <= year <= 2023):
+        raise HTTPException(status_code=400, detail="please enter a year within 2019 to 2023 (inclusive)")
 
     athlete = sqlalchemy.select(db.athlete_stats, db.athletes, db.teams).select_from(
         db.athletes.join(db.athlete_stats, isouter=True).join(db.teams, isouter=True)
@@ -95,6 +97,8 @@ def compare_athletes(
     * `athlete_ids`: list of athlete names to compare (must have length >1)
     * `stat`: stat to compare athletes by (defaults to points)
     """
+    if not(2019 <= year <= 2023):
+        raise HTTPException(status_code=400, detail="please enter a year within 2019 to 2023 (inclusive)")
 
     if len(athlete_ids) < 2:
         raise HTTPException(status_code=400, detail="athlete list given does not contain enough athletes.")
