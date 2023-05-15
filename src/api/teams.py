@@ -70,7 +70,7 @@ def get_team(team_name: team_options, year: int):
                                       db.games.c.pts_home,
                                       db.games.c.pts_away,
                                       db.games.c.winner).where((
-                (team_id == db.games.c.home) | (team_id == db.games.c.away)) & (extract("year", db.games.c.date) == year))
+                (db.games.c.home == team_id) | (db.games.c.away == team_id)) & (extract("year", db.games.c.date) == year))
 
 
             games_table = conn.execute(games).fetchall()
@@ -123,13 +123,13 @@ def compare_team(team_1: team_options,
             * `blocks`: The average blocks per game
     '''
 
-    stmt = (
+    teams_to_compare = (
         sqlalchemy.select(db.teams.c.team_id, db.teams.c.team_name)
             .where(sqlalchemy.column('team_name').in_([team_1, team_2, team_3, team_4, team_5]))
     )
 
     with db.engine.connect() as conn:
-        result = conn.execute(stmt).fetchall()
+        result = conn.execute(teams_to_compare).fetchall()
         json = []
         for row in result:
             team_dict = {"team id": row.team_id, "team name": row.team_name}
@@ -142,12 +142,11 @@ def compare_team(team_1: team_options,
                                       db.games.c.blk_home,
                                       db.games.c.away,
                                       db.games.c.pts_away,
-                                      db.games.c.winner,
                                       db.games.c.reb_away,
                                       db.games.c.ast_away,
                                       db.games.c.stl_away,
                                       db.games.c.blk_away).where(
-                (row.team_id == db.games.c.home) | (row.team_id == db.games.c.away))
+                (db.games.c.home == row.team_id) | (db.games.c.away == row.team_id))
 
             games = conn.execute(games_stmt).fetchall()
             wins = points = rebounds = assists = steals = blocks = 0
