@@ -29,17 +29,17 @@ def get_game(
     if home_team == away_team:
         raise HTTPException(status_code=400, detail="Teams are the same")
 
-    home_team_id = sqlalchemy.select(
+    home_team_id_stmt = sqlalchemy.select(
         db.teams.c.team_id
     ).where(home_team == db.teams.c.team_name)
 
-    away_team_id = sqlalchemy.select(
+    away_team_id_stmt = sqlalchemy.select(
         db.teams.c.team_id
     ).where(away_team == db.teams.c.team_name)
 
     with db.engine.connect() as conn:
-        home_team_id = conn.execute(home_team_id).fetchone().team_id
-        away_team_id = conn.execute(away_team_id).fetchone().team_id
+        home_team_id = conn.execute(home_team_id_stmt).fetchone().team_id
+        away_team_id = conn.execute(away_team_id_stmt).fetchone().team_id
 
         result = conn.execute(
             sqlalchemy.select(
