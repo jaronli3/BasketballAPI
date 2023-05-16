@@ -1,4 +1,4 @@
-"""create team_predictions table
+"""create tables
 
 Revision ID: 4c15ee86918d
 Revises: 
@@ -7,6 +7,7 @@ Create Date: 2023-05-16 14:23:22.006404
 """
 from alembic import op
 import sqlalchemy as sa
+import csv
 
 # revision identifiers, used by Alembic.
 revision = '4c15ee86918d'
@@ -14,8 +15,23 @@ down_revision = None
 branch_labels = None
 depends_on = None
 
+prefix = "/Users/zach/Desktop/CSC_365/Project/"
+
 
 def upgrade() -> None:
+
+    op.create_table(
+        'athletes',
+        sa.Column('athlete_id', sa.Integer, primary_key=True, autoincrement=True),
+        sa.Column('name', sa.Text, nullable=False)
+    )
+
+    op.create_table(
+        'teams',
+        sa.Column('team_id', sa.Integer, primary_key=True, autoincrement=True),
+        sa.Column('team_abbrev', sa.Text, nullable=False),
+        sa.Column('team_name', sa.Text, nullable=False)
+    )
 
     op.create_table(
         'athlete_stats',
@@ -34,12 +50,6 @@ def upgrade() -> None:
         sa.Column('blocks', sa.Integer, nullable=False),
         sa.Column('turnovers', sa.Integer, nullable=False),
         sa.Column('points', sa.Integer, nullable=False)
-    )
-
-    op.create_table(
-        'athletes',
-        sa.Column('athlete_id', sa.Integer, primary_key=True, autoincrement=True),
-        sa.Column('name', sa.Text, nullable=False)
     )
 
     op.create_table(
@@ -65,13 +75,6 @@ def upgrade() -> None:
     )
 
     op.create_table(
-        'teams',
-        sa.Column('team_id', sa.Integer, primary_key=True, autoincrement=True),
-        sa.Column('team_abbrev', sa.Text, nullable=False),
-        sa.Column('team_name', sa.Text, nullable=False)
-    )
-
-    op.create_table(
         'team_ratings',
         sa.Column('team_rating_id', sa.Integer, primary_key=True, autoincrement=True),
         sa.Column('team_id', sa.Integer, nullable=False),
@@ -86,6 +89,18 @@ def upgrade() -> None:
         sa.ForeignKeyConstraint(['athlete_id'], ['athletes.athlete_id']),
         sa.Column('rating', sa.Integer, nullable=False)
     )
+
+    with open(prefix + "data/athlete_stats.csv", mode="r", encoding="utf-8-sig") as csv_file:
+        op.bulk_insert(sa.Table('athlete_stats', sa.MetaData()), [row for row in csv.DictReader(csv_file, skipinitialspace=True)])
+
+    with open(prefix + "data/athletes.csv", mode="r", encoding="utf-8-sig") as csv_file:
+        op.bulk_insert(sa.Table('athletes', sa.MetaData()), [row for row in csv.DictReader(csv_file, skipinitialspace=True)])
+
+    with open(prefix + "data/games.csv", mode="r", encoding="utf-8-sig") as csv_file:
+        op.bulk_insert(sa.Table('games', sa.MetaData()), [row for row in csv.DictReader(csv_file, skipinitialspace=True)])
+
+    with open(prefix + "data/teams.csv", mode="r", encoding="utf-8-sig") as csv_file:
+        op.bulk_insert(sa.Table('teams', sa.MetaData()), [row for row in csv.DictReader(csv_file, skipinitialspace=True)])
 
 
 def downgrade() -> None:
