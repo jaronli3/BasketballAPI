@@ -3,18 +3,17 @@ import sqlalchemy
 from src import database as db
 from pydantic import BaseModel, conint
 
-
 router = APIRouter()
 
 class TeamRating(BaseModel):
-    name: str
+    id: int
     rating: conint(ge=1, le=5)
 
-@router.post("/team-ratings/", tags=["ratings"])
+@router.post("/teamratings/", tags=["ratings"])
 def add_team_rating(team_rat: TeamRating):
     """
     This endpoint adds a user-generated team rating to the team_ratings table 
-    * `team_rat`: contains the name (str) and rating (as int 1 --> 5) of the team 
+    * `team_rat`: contains the id (int) and rating (as int 1 --> 5) of the team 
 
     The endpoint returns the id of the newly generated team rating
     """
@@ -27,14 +26,14 @@ def add_team_rating(team_rat: TeamRating):
                 '''
                 INSERT INTO team_ratings (team_id, rating)
                 VALUES (:team_id, :rating)
-                RETURNING team_rating_id;
+                RETURNING team_prediction_id;
             '''
             ),
             {
-                "team_id": team_rat.name,
+                "team_id": team_rat.id,
                 "rating": team_rat.rating
             }
         )
         team_rating = inserted_team_rating.fetchone()
         conn.commit()
-    return team_rating.team_rating_id
+    return team_rating.team_prediction_id
