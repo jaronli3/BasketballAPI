@@ -72,7 +72,7 @@ def user_login(userinfo: UserInfo):
                 WHERE username = :username
             """
             ), {"username": userinfo.username}
-        )
+        ).scalar_one()
     # check the password matches 
     return check_password(userinfo.password, hashed_password)
 
