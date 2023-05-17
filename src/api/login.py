@@ -37,7 +37,7 @@ def add_user(userinfo: UserInfo):
         inserted_user = conn.execute(
             sqlalchemy.text(
             """
-                INSERT INTO users (username, password)
+                INSERT INTO users (username, hashed_password)
                 VALUES (:username, :password)
                 RETURNING user_id;
             """
@@ -63,11 +63,16 @@ def user_login(userinfo: UserInfo):
     Returns a string for if the user login was successful 
     """
 
-    # general query (TODO need to change names depending on how we name DB table)
-    user = sqlalchemy.select(username, password
-    ).select_from(users
-    ).where(username = userinfo.username)
-
+    with db.engine.connect() as conn:
+        hashed_password = conn.execute(
+            sqlalchemy.text(
+            """
+                SELECT hashed_password
+                FROM users
+                WHERE username = :username
+            """
+            ), {"username": userinfo.username}
+        )
     # check the password matches 
-    login_success = check_password(userinfo.password, user.password)
+    return check_password(userinfo.password, hashed_password)
 
