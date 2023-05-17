@@ -1,13 +1,14 @@
 from fastapi import APIRouter
 from src import database as db
 import sqlalchemy
-from bcrypt import gensalt, hashpw
+from bcrypt import gensalt, hashpw, checkpw
 from pydantic import BaseModel
 
 router = APIRouter()
 
 # just checks yes or no if the user-passed in password matches 
 # (not true perfect authorization)
+
 
 
 def hash_and_salt_password(password):
@@ -20,12 +21,14 @@ def hash_and_salt_password(password):
     # get the hashed and salted password
     return hashed_password.decode('utf-8')
 
+def check_password(entered_password, hashed_password):
+    return checkpw(entered_password.encode('utf-8'), hashed_password.encode('utf-8'))
 
 class UserInfo(BaseModel):
     username: str
     password: str
 
-@router.post("/login/", tags=["login"])
+@router.post("/adduser/", tags=["login"])
 def add_user(userinfo: UserInfo):
     """
     This endpoint registers a new user, with a given username and password
@@ -51,3 +54,23 @@ def add_user(userinfo: UserInfo):
         user = inserted_user.fetchone()
         conn.commit()
     return user.user_id
+
+@router.post("/loginuser/", tags=["login"])
+def user_login(userinfo: UserInfo):
+    """
+    This endpoint checks that a user's entered username and password 
+    match what is stored in the database
+    * `userinfo` is a class w/ two string attributes: username and password 
+
+    Returns a string for if the user login was successful 
+    """
+
+    # general query (TODO need to change names depending on how we name DB table)
+    user = sqlalchemy.select(username, password
+    ).select_from(users
+    ).where(username = userinfo.username)
+
+    # check the password matches 
+    login_success = check_password(userinfo.password, user.password)
+
+    
