@@ -6,10 +6,9 @@ from pydantic import BaseModel
 
 router = APIRouter()
 
-# just checks yes or no if the user-passed in password matches 
-# (not true perfect authorization)
-
-
+class UserInfo(BaseModel):
+    username: str
+    password: str
 
 def hash_and_salt_password(password):
     # Generate a random salt
@@ -24,9 +23,6 @@ def hash_and_salt_password(password):
 def check_password(entered_password, hashed_password):
     return checkpw(entered_password.encode('utf-8'), hashed_password.encode('utf-8'))
 
-class UserInfo(BaseModel):
-    username: str
-    password: str
 
 @router.post("/adduser/", tags=["login"])
 def add_user(userinfo: UserInfo):
@@ -60,6 +56,8 @@ def user_login(userinfo: UserInfo):
     """
     This endpoint checks that a user's entered username and password 
     match what is stored in the database
+    (just checks yes or no if the user-passed in password matches 
+    (not true perfect authorization))
     * `userinfo` is a class w/ two string attributes: username and password 
 
     Returns a string for if the user login was successful 
@@ -73,4 +71,3 @@ def user_login(userinfo: UserInfo):
     # check the password matches 
     login_success = check_password(userinfo.password, user.password)
 
-    
