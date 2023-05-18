@@ -27,7 +27,7 @@ def get_athlete(id: int,
     age, team_id, team_name, games_played, minutes_played, field_goal_percentage, free_throw_percentage,
     total_rebounds, assists, steals, blocks, points
     """
-    if not(2019 <= year <= 2023):
+    if year and not(2019 <= year <= 2023):
         raise HTTPException(status_code=400, detail="please enter a year within 2019 to 2023 (inclusive)")
 
     athlete = sqlalchemy.select(db.athlete_stats, db.athletes, db.teams).select_from(
