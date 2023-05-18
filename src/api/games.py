@@ -46,7 +46,6 @@ def get_game(
                 db.games.c.game_id,
                 db.games.c.home,
                 db.games.c.away,
-                db.games.c.winner,
                 db.games.c.pts_home,
                 db.games.c.pts_away,
                 db.games.c.date
@@ -61,7 +60,7 @@ def get_game(
             {"game_id": game.game_id,
              "home_team": home_team.value,
              "away_team": away_team.value,
-             "winner": home_team.value if game.winner == game.home else away_team.value,
+             "winner": home_team.value if game.pts_home > game.pts_away else away_team.value,
              "home_team_score": game.pts_home,
              "away_team_score": game.pts_away,
              "date": str(game.date)}

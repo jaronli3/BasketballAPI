@@ -61,8 +61,6 @@ def upgrade() -> None:
         sa.ForeignKeyConstraint(['home'], ['teams.team_id']),
         sa.Column('away', sa.Integer, nullable=False),
         sa.ForeignKeyConstraint(['away'], ['teams.team_id']),
-        sa.Column('winner', sa.Integer, nullable=False),
-        sa.ForeignKeyConstraint(['winner'], ['teams.team_id']),
         sa.Column('date', sa.Date, nullable=False),
         sa.Column('pts_home', sa.Integer, nullable=False),
         sa.Column('pts_away', sa.Integer, nullable=False),
@@ -134,7 +132,6 @@ def upgrade() -> None:
         Column("game_id", Integer),
         Column("home", Integer),
         Column("away", Integer),
-        Column("winner", Integer),
         Column("date", Date),
         Column("pts_home", Integer),
         Column("pts_away", Integer),
@@ -166,8 +163,6 @@ def upgrade() -> None:
 
     with open(prefix + "data/games.csv", mode="r", encoding="utf-8") as csv_file:
         op.bulk_insert(games, [row for row in csv.DictReader(csv_file, skipinitialspace=True)])
-
-
 
 
 def downgrade() -> None:
