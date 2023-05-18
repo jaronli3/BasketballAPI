@@ -92,5 +92,5 @@ def add_athlete_rating(rat: Rating):
             }
         ).scalar_one()
         conn.commit()
-    return rating.athlete_rating_id
+    return inserted_rating
 
