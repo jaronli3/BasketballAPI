@@ -1,31 +1,31 @@
-﻿team_id,team_name
-0,TOR
-1,MEM
-2,MIA
-3,UTA
-4,MIL
-5,CLE
-6,NOP
-7,MIN
-8,ORL
-9,NYK
-10,WAS
-11,PHO
-12,DET
-13,GSW
-14,CHO
-15,SAS
-16,SAC
-17,LAC
-18,OKC
-19,DAL
-20,LAL
-21,IND
-22,ATL
-23,CHI
-24,DEN
-25,BOS
-26,POR
-27,PHI
-28,HOU
-29,BRK
+team_id,team_abbrev,team_name
+0,TOR,Toronto Raptors
+1,MEM,Memphis Grizzlies
+2,MIA,Miami Heat
+3,UTA,Utah Jazz
+4,MIL,Milwaukee Bucks
+5,CLE,Cleveland Cavaliers
+6,NOP,New Orleans Pelicans
+7,MIN,Minnesota Timberwolves
+8,ORL,Orlando Magic
+9,NYK,New York Knicks
+10,WAS,Washington Wizards
+11,PHO,Phoenix Suns
+12,DET,Detroit Pistons
+13,GSW,Golden State Warriors
+14,CHO,Charlotte Hornets
+15,SAS,San Antonio Spurs
+16,SAC,Sacramento Kings
+17,LAC,Los Angeles Clippers
+18,OKC,Oklahoma City Thunder
+19,DAL,Dallas Mavericks
+20,LAL,Los Angeles Lakers
+21,IND,Indiana Pacers
+22,ATL,Atlanta Hawks
+23,CHI,Chicago Bulls
+24,DEN,Denver Nuggets
+25,BOS,Boston Celtics
+26,POR,Portland Trail Blazers
+27,PHI,Philadelphia 76ers
+28,HOU,Houston Rockets
+29,BRK,Brooklyn Nets

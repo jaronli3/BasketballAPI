@@ -68,8 +68,7 @@ def get_team(team_name: team_options, year: int):
             games = sqlalchemy.select(db.games.c.home,
                                       db.games.c.away,
                                       db.games.c.pts_home,
-                                      db.games.c.pts_away,
-                                      db.games.c.winner).where((
+                                      db.games.c.pts_away).where((
                 (db.games.c.home == team_id) | (db.games.c.away == team_id)) & (extract("year", db.games.c.date) == year))
 
 
@@ -78,7 +77,8 @@ def get_team(team_name: team_options, year: int):
             wins = points_for = points_allowed = 0
 
             for row in games_table:
-                if row.winner == team_id:
+                winner = row.home if row.pts_home > row.pts_away else row.away
+                if winner == team_id:
                     wins += 1
                 if team_id == row.home:
                     points_for += row.pts_home
@@ -135,7 +135,6 @@ def compare_team(team_1: team_options,
             team_dict = {"team id": row.team_id, "team name": row.team_name}
             games_stmt = sqlalchemy.select(db.games.c.home,
                                       db.games.c.pts_home,
-                                      db.games.c.winner,
                                       db.games.c.reb_home,
                                       db.games.c.ast_home,
                                       db.games.c.stl_home,
@@ -152,7 +151,8 @@ def compare_team(team_1: team_options,
             wins = points = rebounds = assists = steals = blocks = 0
 
             for game in games:
-                if game.winner == row.team_id:
+                winner = row.home if row.pts_home > row.pts_away else row.away
+                if winner == row.team_id:
                     wins += 1
                 if game.home == row.team_id:
                     points += game.pts_home
