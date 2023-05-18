@@ -86,9 +86,7 @@ def upgrade() -> None:
         sa.Column('team_rating_id', sa.Integer, primary_key=True, autoincrement=True),
         sa.Column('team_id', sa.Integer, nullable=False),
         sa.ForeignKeyConstraint(['team_id'], ['teams.team_id']),
-        sa.Column('rating', sa.Integer, nullable=False),
-        sa.Column('user_id', sa.Integer, nullable=False),
-        sa.ForeignKeyConstraint(['user_id'], ['users.user_id'])
+        sa.Column('rating', sa.Integer, nullable=False)
     )
 
     op.create_table(
@@ -96,9 +94,7 @@ def upgrade() -> None:
         sa.Column('athlete_rating_id', sa.Integer, primary_key=True, autoincrement=True),
         sa.Column('athlete_id', sa.Integer, nullable=False),
         sa.ForeignKeyConstraint(['athlete_id'], ['athletes.athlete_id']),
-        sa.Column('rating', sa.Integer, nullable=False),
-        sa.Column('user_id', sa.Integer, nullable=False),
-        sa.ForeignKeyConstraint(['user_id'], ['users.user_id'])
+        sa.Column('rating', sa.Integer, nullable=False)
     )
 
     # Ad hoc tables for insertion

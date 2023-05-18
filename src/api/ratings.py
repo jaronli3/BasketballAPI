@@ -3,6 +3,7 @@ import sqlalchemy
 from src import database as db
 from pydantic import BaseModel, conint
 
+
 router = APIRouter()
 
 class Rating(BaseModel):
@@ -66,4 +67,3 @@ def add_athlete_rating(rat: Rating):
         rating = inserted_rating.fetchone()
         conn.commit()
     return rating.athlete_rating_id
-
