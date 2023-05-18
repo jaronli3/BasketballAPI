@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from src.api import athletes, games, teams, pkg_util, ratings
+from src.api import athletes, games, teams, pkg_util, ratings, login
 
 description = """
 Get all the information and analytical insight 
@@ -42,6 +42,7 @@ app.include_router(teams.router)
 app.include_router(games.router)
 app.include_router(pkg_util.router)
 app.include_router(ratings.router)
+app.include_router(login.router)
 
 @app.get("/")
 async def root():
