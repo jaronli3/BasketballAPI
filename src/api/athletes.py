@@ -138,26 +138,22 @@ def add_athlete(name: str):
         db.athletes.c.athlete_id
     ).where(db.athletes.c.name == name)
 
-    with db.engine.connect() as conn:
+    with db.engine.begin() as conn:
         result = conn.execute(stmt).fetchone()
 
         if result:
             raise HTTPException(status_code=400, detail="athlete already exists in database")
 
-        athlete_id = conn.execute(
-            sqlalchemy.select(
-                db.athletes.c.athlete_id
-            )
-            .order_by(sqlalchemy.desc(db.athletes.c.athlete_id))
-            .limit(1)
-        ).fetchone().athlete_id + 1
-
         new_athlete = {
-            "athlete_id": athlete_id,
             "name": name
         }
-        conn.execute(db.athletes.insert().values(**new_athlete))
-        conn.commit()
+
+        stmt1 = db.athletes.insert().values(new_athlete).returning(db.athletes.c.athlete_id)
+        try:
+            stmt2 = conn.execute(stmt1)
+            athlete_id = stmt2.fetchone()[0]
+        except sqlalchemy.exc.IntegrityError:
+            raise HTTPException(status_code=500, detail= "Error inserting athlete.")
 
     return athlete_id
 
