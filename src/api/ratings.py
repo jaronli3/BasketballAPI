@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 import sqlalchemy
 from src import database as db
 from pydantic import BaseModel, conint
@@ -19,24 +19,37 @@ def add_team_rating(rat: Rating):
     """
 
     with db.engine.connect() as conn:
+        try:
+            team_id = conn.execute(
+                sqlalchemy.text(
+                """
+                    SELECT team_id
+                    FROM teams
+                    WHERE team_name = :team_name
+                """
+                ),
+                {
+                    "team_name": rat.name,
+                }
+            ).scalar_one()
+        except: 
+            HTTPException(status_code=404, detail="team not found.")
+        
         inserted_rating = conn.execute(
             sqlalchemy.text(
             """
                 INSERT INTO team_ratings (team_id, rating)
-                SELECT team_id
-                FROM teams
-                WHERE team_name = :team_name
-                RETURNING team_prediction_id
+                VALUES (:team_id, :rating)
+                RETURNING team_rating_id
             """
             ),
             {
-                "team_name": rat.name,
+                "team_id": team_id,
                 "rating": rat.rating
             }
-        )
-        rating = inserted_rating.fetchone()
+        ).scalar_one()
         conn.commit()
-    return rating.team_prediction_id
+    return inserted_rating
 
 @router.post("/athleteratings/", tags=["ratings"])
 def add_athlete_rating(rat: Rating):
@@ -48,22 +61,34 @@ def add_athlete_rating(rat: Rating):
     """
 
     with db.engine.connect() as conn:
+        try:
+            athlete_id = conn.execute(
+                sqlalchemy.text(
+                """
+                    SELECT athlete_id
+                    FROM athletes
+                    WHERE name = :athlete_name
+                """
+                ),
+                {
+                    "athlete_name": rat.name,
+                }
+            ).scalar_one()
+        except: 
+            HTTPException(status_code=404, detail="athlete not found.")
+        
         inserted_rating = conn.execute(
             sqlalchemy.text(
             """
                 INSERT INTO athlete_ratings (athlete_id, rating)
-                SELECT athlete_id
-                FROM athletes
-                WHERE name = :athlete_name
+                VALUES (:athlete_id, :rating)
                 RETURNING athlete_rating_id
             """
             ),
             {
-                "athlete_name": rat.name,
+                "athlete_id": athlete_id,
                 "rating": rat.rating
             }
-        )
-        rating = inserted_rating.fetchone()
+        ).scalar_one()
         conn.commit()
-    return rating.athlete_rating_id
-
+    return inserted_rating
