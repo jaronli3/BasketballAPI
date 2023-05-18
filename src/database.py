@@ -12,6 +12,7 @@ def database_connection_url():
     DB_NAME: str = os.environ.get("POSTGRES_DB")
     return f"postgresql://{DB_USER}:{DB_PASSWD}@{DB_SERVER}:{DB_PORT}/{DB_NAME}"
 
+
 # Create a new DB engine based on our connection string
 engine = create_engine(database_connection_url())
 
