@@ -20,14 +20,26 @@ depends_on = None
 prefix = "/Users/zach/Desktop/CSC_365/Project/"
 
 
+
 def upgrade() -> None:
 
+    # Athletes
     op.create_table(
         'athletes',
         sa.Column('athlete_id', sa.Integer, primary_key=True, autoincrement=True),
         sa.Column('name', sa.Text, nullable=False)
     )
 
+    athletes = table(
+        "athletes",
+        Column("athlete_id", Integer),
+        Column("name", Text)
+    )
+
+    with open(prefix + "data/athletes.csv", mode="r", encoding="utf-8-sig") as csv_file:
+        op.bulk_insert(athletes, [row for row in csv.DictReader(csv_file, skipinitialspace=True)])
+
+    # Teams
     op.create_table(
         'teams',
         sa.Column('team_id', sa.Integer, primary_key=True, autoincrement=True),
@@ -35,9 +47,21 @@ def upgrade() -> None:
         sa.Column('team_name', sa.Text, nullable=False)
     )
 
+    teams = table(
+        "teams",
+        Column("team_id", Integer),
+        Column("team_abbrev", Text),
+        Column("team_name", Text)
+    )
+
+    with open(prefix + "data/teams.csv", mode="r", encoding="utf-8-sig") as csv_file:
+        op.bulk_insert(teams, [row for row in csv.DictReader(csv_file, skipinitialspace=True)])
+
+    # Athlete Stats
     op.create_table(
         'athlete_stats',
         sa.Column('athlete_id', sa.Integer, primary_key=True),
+        sa.ForeignKeyConstraint(['athlete_id'], ['athletes.athlete_id']),
         sa.Column('year', sa.Integer, primary_key=True),
         sa.Column('age', sa.Integer, nullable=False),
         sa.Column('team_id', sa.Integer, nullable=False),
@@ -54,6 +78,28 @@ def upgrade() -> None:
         sa.Column('points', sa.Integer, nullable=False)
     )
 
+    athlete_stats = table(
+        "athlete_stats",
+        Column("athlete_id", Integer),
+        Column("year", Integer),
+        Column("age", Integer),
+        Column("team_id", Integer),
+        Column("games_played", Integer),
+        Column("minutes_played", Integer),
+        Column("field_goal_percentage", Float),
+        Column("free_throw_percentage", Float),
+        Column("total_rebounds", Integer),
+        Column("assists", Integer),
+        Column("steals", Integer),
+        Column("blocks", Integer),
+        Column("turnovers", Integer),
+        Column("points", Integer)
+    )
+
+    with open(prefix + "data/athlete_stats.csv", mode="r", encoding="utf-8-sig") as csv_file:
+        op.bulk_insert(athlete_stats, [row for row in csv.DictReader(csv_file, skipinitialspace=True)])
+
+    # Games
     op.create_table(
         'games',
         sa.Column('game_id', sa.Integer, primary_key=True, autoincrement=True),
@@ -74,59 +120,6 @@ def upgrade() -> None:
         sa.Column('blk_away', sa.Integer, nullable=False)
     )
 
-    op.create_table(
-        'users',
-        sa.Column('user_id', sa.Integer, primary_key=True, autoincrement=True),
-        sa.Column('username', sa.Text, nullable=False),
-        sa.Column('hashed_password', sa.Text, nullable=False)
-    )
-
-    op.create_table(
-        'team_ratings',
-        sa.Column('team_rating_id', sa.Integer, primary_key=True, autoincrement=True),
-        sa.Column('team_id', sa.Integer, nullable=False),
-        sa.ForeignKeyConstraint(['team_id'], ['teams.team_id']),
-        sa.Column('rating', sa.Integer, nullable=False),
-        sa.Column('user_id', sa.Integer, nullable=False),
-        sa.ForeignKeyConstraint(['user_id'], ['users.user_id'])
-    )
-
-    op.create_table(
-        'athlete_ratings',
-        sa.Column('athlete_rating_id', sa.Integer, primary_key=True, autoincrement=True),
-        sa.Column('athlete_id', sa.Integer, nullable=False),
-        sa.ForeignKeyConstraint(['athlete_id'], ['athletes.athlete_id']),
-        sa.Column('rating', sa.Integer, nullable=False),
-        sa.Column('user_id', sa.Integer, nullable=False),
-        sa.ForeignKeyConstraint(['user_id'], ['users.user_id'])
-    )
-
-    # Ad hoc tables for insertion
-
-    athlete_stats = table(
-        "athlete_stats",
-        Column("athlete_id", Integer),
-        Column("year", Integer),
-        Column("age", Integer),
-        Column("team_id", Integer),
-        Column("games_played", Integer),
-        Column("minutes_played", Integer),
-        Column("field_goal_percentage", Float),
-        Column("free_throw_percentage", Float),
-        Column("total_rebounds", Integer),
-        Column("assists", Integer),
-        Column("steals", Integer),
-        Column("blocks", Integer),
-        Column("turnovers", Integer),
-        Column("points", Integer)
-    )
-
-    athletes = table(
-        "athletes",
-        Column("athlete_id", Integer),
-        Column("name", Text)
-    )
-
     games = table(
         "games",
         Column("game_id", Integer),
@@ -145,24 +138,34 @@ def upgrade() -> None:
         Column("blk_away", Integer),
     )
 
-    teams = table(
-        "teams",
-        Column("team_id", Integer),
-        Column("team_abbrev", Text),
-        Column("team_name", Text)
+    with open(prefix + "data/games.csv", mode="r", encoding="utf-8-sig") as csv_file:
+        op.bulk_insert(games, [row for row in csv.DictReader(csv_file, skipinitialspace=True)])
+
+    # Users
+    op.create_table(
+        'users',
+        sa.Column('user_id', sa.Integer, primary_key=True, autoincrement=True),
+        sa.Column('username', sa.Text, nullable=False),
+        sa.Column('hashed_password', sa.Text, nullable=False)
     )
 
-    with open(prefix + "data/athletes.csv", mode="r", encoding="utf-8") as csv_file:
-        op.bulk_insert(athletes, [row for row in csv.DictReader(csv_file, skipinitialspace=True)])
+    # Team Ratings
+    op.create_table(
+        'team_ratings',
+        sa.Column('team_rating_id', sa.Integer, primary_key=True, autoincrement=True),
+        sa.Column('team_id', sa.Integer, nullable=False),
+        sa.ForeignKeyConstraint(['team_id'], ['teams.team_id']),
+        sa.Column('rating', sa.Integer, nullable=False)
+    )
 
-    with open(prefix + "data/teams.csv", mode="r", encoding="utf-8") as csv_file:
-        op.bulk_insert(teams, [row for row in csv.DictReader(csv_file, skipinitialspace=True)])
-
-    with open(prefix + "data/athlete_stats.csv", mode="r", encoding="utf-8") as csv_file:
-        op.bulk_insert(athlete_stats, [row for row in csv.DictReader(csv_file, skipinitialspace=True)])
-
-    with open(prefix + "data/games.csv", mode="r", encoding="utf-8") as csv_file:
-        op.bulk_insert(games, [row for row in csv.DictReader(csv_file, skipinitialspace=True)])
+    # Athlete Ratings
+    op.create_table(
+        'athlete_ratings',
+        sa.Column('athlete_rating_id', sa.Integer, primary_key=True, autoincrement=True),
+        sa.Column('athlete_id', sa.Integer, nullable=False),
+        sa.ForeignKeyConstraint(['athlete_id'], ['athletes.athlete_id']),
+        sa.Column('rating', sa.Integer, nullable=False)
+    )
 
 
 def downgrade() -> None:
