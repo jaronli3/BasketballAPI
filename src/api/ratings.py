@@ -34,7 +34,8 @@ def add_team_rating(rat: Rating):
                 }
             ).scalar_one()
         except: 
-            HTTPException(status_code=404, detail="team not found.")
+            raise HTTPException(status_code=404, detail="team not found.")
+            
         
         inserted_rating = conn.execute(
             sqlalchemy.text(
@@ -76,7 +77,7 @@ def add_athlete_rating(rat: Rating):
                 }
             ).scalar_one()
         except: 
-            HTTPException(status_code=404, detail="athlete not found.")
+            raise HTTPException(status_code=404, detail="athlete not found.")
         
         inserted_rating = conn.execute(
             sqlalchemy.text(
