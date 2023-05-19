@@ -1,11 +1,11 @@
 from fastapi import APIRouter, HTTPException
 import sqlalchemy
-from sqlalchemy import inspect, func
+from sqlalchemy import inspect
 
 from src import database as db
 from src.api.teams import team_options
 from src.api import athletes, teams
-import numpy as np
+from scipy import array, average
 from sklearn.linear_model import LinearRegression
 
 router = APIRouter()
@@ -36,11 +36,11 @@ def get_athlete_market_price(id: int):
 
     athlete_metadata = ["athlete_id", "year", "age", "team_id", "team_name"]
 
-    x_train = np.array([season.get("year") for season in athlete_stats_json]).reshape(-1, 1)
+    x_train = array([season.get("year") for season in athlete_stats_json]).reshape(-1, 1)
     predictions = {}
     for key in athlete_stats_json[0].keys():
         if key not in athlete_metadata:
-            y_train = np.array([season.get(key) for season in athlete_stats_json])
+            y_train = array([season.get(key) for season in athlete_stats_json])
             model = LinearRegression()
             model.fit(x_train, y_train)
             prediction = model.predict([[2024]])
@@ -72,7 +72,7 @@ def get_athlete_market_price(id: int):
     with db.engine.begin() as conn:
         ratings = conn.execute(ratings_stmt).fetchall()
 
-    mean_rating = np.average(ratings) if len(ratings) > 0 else 3  # Average
+    mean_rating = average(ratings) if len(ratings) > 0 else 3  # Average
 
     # Output
 
@@ -96,4 +96,4 @@ def get_athlete_market_price(id: int):
     return round(market_price, 2)
 
 
-# print(get_athlete_market_price(107))
+print(get_athlete_market_price(107))
