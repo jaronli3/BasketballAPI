@@ -5,7 +5,7 @@ from sqlalchemy import inspect
 from src import database as db
 from src.api.teams import team_options
 from src.api import athletes, teams
-from sklearn.linear_model import LinearRegression
+# from sklearn.linear_model import LinearRegression
 
 router = APIRouter()
 
@@ -35,16 +35,20 @@ def get_athlete_market_price(id: int):
 
     athlete_metadata = ["athlete_id", "year", "age", "team_id", "team_name"]
 
-    x_train = [[season.get("year")] for season in athlete_stats_json]
+    x_train = [season.get("year") for season in athlete_stats_json]
     predictions = {}
 
     for key in athlete_stats_json[0].keys():
         if key not in athlete_metadata:
             y_train = [season.get(key) for season in athlete_stats_json]
-            model = LinearRegression()
-            model.fit(x_train, y_train)
-            prediction = model.predict([[2024]])
-            predictions[key] = prediction[0]
+            x_mean = sum(x_train) / len(x_train)
+            y_mean = sum(y_train) / len(y_train)
+            numerator = sum((x - x_mean) * (y - y_mean) for x, y in zip(x_train, y_train))
+            denominator = sum((x - x_mean) ** 2 for x in x_train)
+            slope = numerator / denominator
+            intercept = y_mean - (slope * x_mean)
+            prediction = intercept + slope * 2024
+            predictions[key] = prediction
 
     # Max values
     inspector = inspect(db.engine)
@@ -95,8 +99,8 @@ def get_athlete_market_price(id: int):
 
     weighted_sum = sum(std_predictions[prediction] * weights[prediction] for prediction in std_predictions)
     market_price = pow(1 + weighted_sum, mean_rating)
-    print(weighted_sum)
-    print(mean_rating)
+    # print(weighted_sum)
+    # print(mean_rating)
     return round(market_price, 2)
 
 
