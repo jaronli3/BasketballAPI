@@ -78,9 +78,6 @@ def get_athlete(id: int,
             if not name:
                 raise HTTPException(status_code=404, detail="athlete not found.")
 
-            # if year:  # Filter if year argument is passed
-            #     athlete = athlete.where(db.athlete_stats.c.year == year)
-
             athlete = conn.execute(athlete).fetchall()
             stats = [{
                 "year": row.year,
