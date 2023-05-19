@@ -29,45 +29,83 @@ def get_athlete(id: int,
     """
     if year and not(2019 <= year <= 2023):
         raise HTTPException(status_code=400, detail="please enter a year within 2019 to 2023 (inclusive)")
+    elif year and (2019 <= year <= 2023):
+        athlete = sqlalchemy.select(db.athlete_stats, db.athletes, db.teams).select_from(
+            db.athletes.join(db.athlete_stats, isouter=True).join(db.teams, isouter=True)
+        ).where(db.athlete_stats.c.athlete_id == id)
 
-    athlete = sqlalchemy.select(db.athlete_stats, db.athletes, db.teams).select_from(
+        with db.engine.connect() as conn:
+            name = conn.execute(athlete).fetchone()
+
+            if not name:
+                raise HTTPException(status_code=404, detail="athlete not found.")
+
+            if year:  # Filter if year argument is passed
+                athlete = athlete.where(db.athlete_stats.c.year == year)
+
+            athlete = conn.execute(athlete).fetchall()
+            stats = [{
+                "year": row.year,
+                "age": row.age,
+                "team_id": row.team_id,
+                "team_name": row.team_name,
+                "games_played": row.games_played,
+                "minutes_played": row.minutes_played,
+                "field_goal_percentage": row.field_goal_percentage,
+                "free_throw_percentage": row.free_throw_percentage,
+                "total_rebounds": row.total_rebounds,
+                "assists": row.assists,
+                "steals": row.steals,
+                "blocks": row.blocks,
+                "points": row.points
+            }
+                for row in athlete]
+
+            json = {
+                "athlete_id": id,
+                "name": name.name,
+                "stats": stats
+            }
+            return json
+    elif not year:
+        athlete = sqlalchemy.select(db.athlete_stats, db.athletes, db.teams).select_from(
         db.athletes.join(db.athlete_stats, isouter=True).join(db.teams, isouter=True)
-    ).where(db.athlete_stats.c.athlete_id == id)
+        ).where(db.athlete_stats.c.athlete_id == id)
 
-    with db.engine.connect() as conn:
-        name = conn.execute(athlete).fetchone()
+        with db.engine.connect() as conn:
+            name = conn.execute(athlete).fetchone()
 
-        if not name:
-            raise HTTPException(status_code=404, detail="athlete not found.")
+            if not name:
+                raise HTTPException(status_code=404, detail="athlete not found.")
 
-        if year:  # Filter if year argument is passed
-            athlete = athlete.where(db.athlete_stats.c.year == year)
+            # if year:  # Filter if year argument is passed
+            #     athlete = athlete.where(db.athlete_stats.c.year == year)
 
-        athlete = conn.execute(athlete).fetchall()
-        stats = [{
-            "year": row.year,
-            "age": row.age,
-            "team_id": row.team_id,
-            "team_name": row.team_name,
-            "games_played": row.games_played,
-            "minutes_played": row.minutes_played,
-            "field_goal_percentage": row.field_goal_percentage,
-            "free_throw_percentage": row.free_throw_percentage,
-            "total_rebounds": row.total_rebounds,
-            "assists": row.assists,
-            "steals": row.steals,
-            "blocks": row.blocks,
-            "points": row.points
-        }
-            for row in athlete]
+            athlete = conn.execute(athlete).fetchall()
+            stats = [{
+                "year": row.year,
+                "age": row.age,
+                "team_id": row.team_id,
+                "team_name": row.team_name,
+                "games_played": row.games_played,
+                "minutes_played": row.minutes_played,
+                "field_goal_percentage": row.field_goal_percentage,
+                "free_throw_percentage": row.free_throw_percentage,
+                "total_rebounds": row.total_rebounds,
+                "assists": row.assists,
+                "steals": row.steals,
+                "blocks": row.blocks,
+                "points": row.points
+            }
+                for row in athlete]
 
-        json = {
-            "athlete_id": id,
-            "name": name.name,
-            "stats": stats
-        }
+            json = {
+                "athlete_id": id,
+                "name": name.name,
+                "stats": stats
+            }
 
-        return json
+            return json
 
 
 class StatOptions(str, Enum):
