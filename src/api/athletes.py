@@ -243,6 +243,7 @@ def add_athlete_season(athlete: AthleteJson):
     return athlete_name.name
 
 
+
 # stats = AthleteStats(games_played=0, minutes_played=0, field_goal_percentage=0,
 #                      free_throw_percentage=0, total_rebounds=0, assists=0, steals=0, blocks=0, turnovers=0, points=0)
 # athlete_json = AthleteJson(athlete_id=969, age=0, year=2023, team_id=0, stats=stats)
