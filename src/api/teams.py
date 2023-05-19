@@ -44,48 +44,38 @@ class team_options(str, Enum):
     brooklyn_nets = "Brooklyn Nets"
 
 def get_team_helper(conn, team_id, year):
-    # with db.engine.connect() as conn:
-    #         result = conn.execute(team).fetchone()
-            
-    #         if not result:
-    #             raise HTTPException(status_code=404, detail="team not found.")
-
-    #         team_id = result.team_id
-        # if result:
-        games = sqlalchemy.select(db.games.c.home,
-                                db.games.c.away,
-                                db.games.c.pts_home,
-                                db.games.c.pts_away).where((
-            (db.games.c.home == team_id) | (db.games.c.away == team_id)) & (((extract("year", db.games.c.date) == year) & (extract("month", db.games.c.date) < 10)) | ((extract("year", db.games.c.date) == year - 1) & (extract("month", db.games.c.date) >= 10))))
+    games = sqlalchemy.select(db.games.c.home,
+                            db.games.c.away,
+                            db.games.c.pts_home,
+                            db.games.c.pts_away).where((
+        (db.games.c.home == team_id) | (db.games.c.away == team_id)) & (((extract("year", db.games.c.date) == year) & (extract("month", db.games.c.date) < 10)) | ((extract("year", db.games.c.date) == year - 1) & (extract("month", db.games.c.date) >= 10))))
 
 
-        games_table = conn.execute(games).fetchall()
+    games_table = conn.execute(games).fetchall()
 
-        wins = points_for = points_allowed = losses = 0
+    wins = points_for = points_allowed = losses = 0
+    
+    for row in games_table:
+        winner = row.home if row.pts_home > row.pts_away else row.away
+        if winner == team_id:
+            wins += 1
+        else:
+            losses += 1
+        if team_id == row.home:
+            points_for += row.pts_home
+            points_allowed += row.pts_away
+        elif team_id == row.away:
+            points_for += row.pts_away
+            points_allowed += row.pts_home
         
-        for row in games_table:
-            winner = row.home if row.pts_home > row.pts_away else row.away
-            if winner == team_id:
-                wins += 1
-            else:
-                losses += 1
-            if team_id == row.home:
-                points_for += row.pts_home
-                points_allowed += row.pts_away
-            elif team_id == row.away:
-                points_for += row.pts_away
-                points_allowed += row.pts_home
-            
-        games_played = wins + losses
-        stats = {"season": f"{year - 1}-{year}", "wins": wins, "losses": losses, "average points for": round((points_for / games_played), 2),
-                "average points allowed": round((points_allowed / games_played), 2)}
-            
-            # json = {"team_id": team_id, "team_stats": stats}
-
-        return stats
+    games_played = wins + losses
+    stats = {"season": f"{year - 1}-{year}", "wins": wins, "losses": losses, "average points for": round((points_for / games_played), 2),
+            "average points allowed": round((points_allowed / games_played), 2)}
+        
+    return stats
 
 
-@router.get("/teams/{team_name}/{year}", tags=["teams"])
+@router.get("/teams/{team_name}", tags=["teams"])
 def get_team(team_name: team_options, 
             year: int = None
             ):
@@ -101,45 +91,31 @@ def get_team(team_name: team_options,
     if year and not(2019 <= year <= 2023):
         raise HTTPException(status_code=400, detail="please enter a year within 2019 to 2023 (inclusive)")
 
-    elif year and (2019 <= year <= 2023):
-        team = sqlalchemy.select(db.teams.c.team_id, db.teams.c.team_name, db.teams.c.team_abbrev).where(
-            db.teams.c.team_name == team_name)
+   
+    team = sqlalchemy.select(db.teams.c.team_id, db.teams.c.team_name, db.teams.c.team_abbrev).where(
+        db.teams.c.team_name == team_name)
 
-        with db.engine.connect() as conn:
-            result = conn.execute(team).fetchone()
-            
-            if not result:
-                raise HTTPException(status_code=404, detail="team not found.")
+    with db.engine.connect() as conn:
+        result = conn.execute(team).fetchone()
+        
+        if not result:
+            raise HTTPException(status_code=404, detail="team not found.")
 
-            team_id = result.team_id
+        team_id = result.team_id
 
-            stats = get_team_helper(conn, team_id, year)
-
-            json = {"team_id": team_id, "team_stats": [stats]}
-
-            return json
-
-    elif not year:
-        team = sqlalchemy.select(db.teams.c.team_id, db.teams.c.team_name, db.teams.c.team_abbrev).where(
-            db.teams.c.team_name == team_name)
-
-        with db.engine.connect() as conn:
-            result = conn.execute(team).fetchone()
-            
-            if not result:
-                raise HTTPException(status_code=404, detail="team not found.")
-
-            team_id = result.team_id
-
+        if year:
+            stats = [get_team_helper(conn, team_id, year)]
+        else:
             stats1 = get_team_helper(conn, team_id, 2019)
             stats2 = get_team_helper(conn, team_id, 2020)
             stats3 = get_team_helper(conn, team_id, 2021)
             stats4 = get_team_helper(conn, team_id, 2022)
             stats5 = get_team_helper(conn, team_id, 2023)
+            stats = [stats1, stats2, stats3, stats4, stats5]
 
-            json = {"team_id": team_id, "team_stats": [stats1, stats2, stats3, stats4, stats5]}
+        json = {"team_id": team_id, "team_stats":stats}
 
-            return json
+        return json
 
 class stat_options(str, Enum):
     wins = "wins"
