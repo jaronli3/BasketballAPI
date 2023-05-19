@@ -1,11 +1,10 @@
 from fastapi import APIRouter, HTTPException
 import sqlalchemy
-from sqlalchemy import inspect, func
+from sqlalchemy import inspect
 
 from src import database as db
 from src.api.teams import team_options
 from src.api import athletes, teams
-import numpy as np
 from sklearn.linear_model import LinearRegression
 
 router = APIRouter()
@@ -36,11 +35,12 @@ def get_athlete_market_price(id: int):
 
     athlete_metadata = ["athlete_id", "year", "age", "team_id", "team_name"]
 
-    x_train = np.array([season.get("year") for season in athlete_stats_json]).reshape(-1, 1)
+    x_train = [[season.get("year")] for season in athlete_stats_json]
     predictions = {}
+
     for key in athlete_stats_json[0].keys():
         if key not in athlete_metadata:
-            y_train = np.array([season.get(key) for season in athlete_stats_json])
+            y_train = [season.get(key) for season in athlete_stats_json]
             model = LinearRegression()
             model.fit(x_train, y_train)
             prediction = model.predict([[2024]])
@@ -72,14 +72,32 @@ def get_athlete_market_price(id: int):
     with db.engine.begin() as conn:
         ratings = conn.execute(ratings_stmt).fetchall()
 
-    mean_rating = np.average(ratings)
-    std_rating = np.std(ratings)
+    ratings = [rating_instance.rating for rating_instance in ratings]
+
+    ratings_sum = sum(ratings)
+    ratings_count = len(ratings)
+    mean_rating = ratings_sum / ratings_count if ratings_count > 0 else 3  # Average
 
     # Output
-    print(predictions)
-    print(max_values)
-    print(std_predictions)
+
+    weights = {
+        'games_played': 0.2,
+        'minutes_played': 0.15,
+        'field_goal_percentage': 0.1,
+        'free_throw_percentage': 0.1,
+        'total_rebounds': 0.08,
+        'assists': 0.12,
+        'steals': 0.08,
+        'blocks': 0.03,
+        'turnovers': 0.02,
+        'points': 0.12
+    }
+
+    weighted_sum = sum(std_predictions[prediction] * weights[prediction] for prediction in std_predictions)
+    market_price = pow(1 + weighted_sum, mean_rating)
+    print(weighted_sum)
     print(mean_rating)
+    return round(market_price, 2)
 
 
-print(get_athlete_market_price(107))
+# print(get_athlete_market_price(107))
