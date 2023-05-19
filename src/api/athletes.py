@@ -29,7 +29,8 @@ def get_athlete(id: int,
     """
     if year and not(2019 <= year <= 2023):
         raise HTTPException(status_code=400, detail="please enter a year within 2019 to 2023 (inclusive)")
-    elif year and (2019 <= year <= 2023):
+
+    if year and (2019 <= year <= 2023):
         athlete = sqlalchemy.select(db.athlete_stats, db.athletes, db.teams).select_from(
             db.athletes.join(db.athlete_stats, isouter=True).join(db.teams, isouter=True)
         ).where(db.athlete_stats.c.athlete_id == id)
