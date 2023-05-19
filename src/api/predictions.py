@@ -72,14 +72,28 @@ def get_athlete_market_price(id: int):
     with db.engine.begin() as conn:
         ratings = conn.execute(ratings_stmt).fetchall()
 
-    mean_rating = np.average(ratings)
-    std_rating = np.std(ratings)
+    mean_rating = np.average(ratings) if len(ratings) > 0 else 3  # Average
 
     # Output
-    print(predictions)
-    print(max_values)
-    print(std_predictions)
+
+    weights = {
+        'games_played': 0.2,
+        'minutes_played': 0.15,
+        'field_goal_percentage': 0.1,
+        'free_throw_percentage': 0.1,
+        'total_rebounds': 0.08,
+        'assists': 0.12,
+        'steals': 0.08,
+        'blocks': 0.03,
+        'turnovers': 0.02,
+        'points': 0.12
+    }
+
+    weighted_sum = sum(std_predictions[prediction] * weights[prediction] for prediction in std_predictions)
+    market_price = pow(1 + weighted_sum, mean_rating)
+    print(weighted_sum)
     print(mean_rating)
+    return round(market_price, 2)
 
 
-print(get_athlete_market_price(107))
+# print(get_athlete_market_price(107))
