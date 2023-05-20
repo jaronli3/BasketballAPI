@@ -16,7 +16,6 @@ def database_connection_url():
 # Create a new DB engine based on our connection string
 engine = create_engine(database_connection_url())
 
-
 metadata_obj = sqlalchemy.MetaData()
 
 athletes = sqlalchemy.Table("athletes", metadata_obj, autoload_with=engine)
