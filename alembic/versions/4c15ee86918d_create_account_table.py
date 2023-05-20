@@ -145,7 +145,7 @@ def upgrade() -> None:
     op.create_table(
         'users',
         sa.Column('user_id', sa.Integer, primary_key=True, autoincrement=True),
-        sa.Column('username', sa.Text, nullable=False),
+        sa.Column('username', sa.Text, nullable=False, unique=True),
         sa.Column('hashed_password', sa.Text, nullable=False)
     )
 
@@ -167,9 +167,26 @@ def upgrade() -> None:
         sa.Column('rating', sa.Integer, nullable=False)
     )
 
+    create_athlete_view = '''
+    CREATE MATERIALIZED VIEW max_athlete_stats AS
+    SELECT MAX(games_played) AS max_games_played, MAX(minutes_played) AS max_minutes_played, 
+           MAX(field_goal_percentage) AS max_field_goal_percentage, 
+           MAX(free_throw_percentage) AS max_free_throw_percentage, 
+           MAX(total_rebounds) AS max_total_rebounds, 
+           MAX(assists) AS max_assists, 
+           MAX(steals) AS max_steals, 
+           MAX(blocks) AS max_blocks, 
+           MAX(turnovers) AS max_turnovers, 
+           MAX(points) AS max_points
+    FROM athlete_stats;
+    '''
+
+    op.execute(create_athlete_view)
+
 
 def downgrade() -> None:
 
+    op.execute('DROP MATERIALIZED VIEW max_athlete_stats')
     op.drop_table('athlete_ratings')
     op.drop_table('team_ratings')
     op.drop_table('games')
@@ -177,7 +194,3 @@ def downgrade() -> None:
     op.drop_table('users')
     op.drop_table('teams')
     op.drop_table('athletes')
-
-
-
-

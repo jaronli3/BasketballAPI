@@ -5,7 +5,7 @@ from sqlalchemy import inspect
 from src import database as db
 from src.api.teams import team_options
 from src.api import athletes, teams
-# from sklearn.linear_model import LinearRegression
+import time
 
 router = APIRouter()
 
@@ -26,6 +26,7 @@ def get_athlete_market_price(id: int):
     """
     This endpoint returns the current market price of the specified athlete
     """
+    start = time.time()
 
     # Predictions
     athlete_stats_json = athletes.get_athlete(id).get("stats")
@@ -37,7 +38,7 @@ def get_athlete_market_price(id: int):
 
     x_train = [season.get("year") for season in athlete_stats_json]
     predictions = {}
-
+    print(time.time()-start)
     for key in athlete_stats_json[0].keys():
         if key not in athlete_metadata:
             y_train = [season.get(key) for season in athlete_stats_json]
@@ -49,28 +50,48 @@ def get_athlete_market_price(id: int):
             intercept = y_mean - (slope * x_mean)
             prediction = intercept + slope * 2024
             predictions[key] = prediction
-
+    print(time.time() - start)
     # Max values
-    inspector = inspect(db.engine)
-    columns = inspector.get_columns("athlete_stats")
+    # inspector = inspect(db.engine)
+    # columns = inspector.get_columns("athlete_stats")
+    #
+    # max_values = {}
+    # with db.engine.connect() as conn:
+    #     for column in columns:
+    #         column_name = column['name']
+    #         if column_name not in athlete_metadata:
+    #             query = sqlalchemy.text(f'SELECT MAX({column_name}) FROM athlete_stats')
+    #             result = conn.execute(query)
+    #             max_value = result.scalar()
+    #             max_values[column_name] = max_value
 
-    max_values = {}
-    with db.engine.connect() as conn:
-        for column in columns:
-            column_name = column['name']
-            if column_name not in athlete_metadata:
-                query = sqlalchemy.text(f'SELECT MAX({column_name}) FROM athlete_stats')
-                result = conn.execute(query)
-                max_value = result.scalar()
-                max_values[column_name] = max_value
+    stmt = sqlalchemy.select(db.max_athlete_stats)
+    with db.engine.begin() as conn:
+        result = conn.execute(stmt).fetchone()
+    print(result)
+    max_values = {
+        "games_played": result.max_games_played,
+        "minutes_played": result.max_minutes_played,
+        "field_goal_percentage": result.max_field_goal_percentage,
+        "free_throw_percentage": result.max_free_throw_percentage,
+        "total_rebounds": result.max_total_rebounds,
+        "assists": result.max_assists,
+        "steals": result.max_steals,
+        "blocks": result.max_blocks,
+        "turnovers": result.max_turnovers,
+        "points": result.max_points
+    }
 
+    print(max_values)
+
+    print(time.time() - start)
     std_predictions = {}
     for key in max_values.keys():
         pred = predictions.get(key)
         max_val = max_values.get(key)
         if pred and max_val and max_val != 0:
             std_predictions[key] = pred / max_val
-
+    print(time.time() - start)
     # Ratings
     ratings_stmt = sqlalchemy.select(db.athlete_ratings.c.rating).where(db.athlete_ratings.c.athlete_id == id)
     with db.engine.begin() as conn:
@@ -81,7 +102,7 @@ def get_athlete_market_price(id: int):
     ratings_sum = sum(ratings)
     ratings_count = len(ratings)
     mean_rating = ratings_sum / ratings_count if ratings_count > 0 else 3  # Average
-
+    print(time.time() - start)
     # Output
 
     weights = {
@@ -99,9 +120,8 @@ def get_athlete_market_price(id: int):
 
     weighted_sum = sum(std_predictions[prediction] * weights[prediction] for prediction in std_predictions)
     market_price = pow(1 + weighted_sum, mean_rating)
-    # print(weighted_sum)
-    # print(mean_rating)
+    print(time.time() - start)
     return round(market_price, 2)
 
 
-# print(get_athlete_market_price(107))
+print(get_athlete_market_price(107))

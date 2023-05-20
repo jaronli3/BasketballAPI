@@ -26,3 +26,4 @@ athlete_stats = sqlalchemy.Table("athlete_stats", metadata_obj, autoload_with=en
 users = sqlalchemy.Table("users", metadata_obj, autoload_with=engine)
 athlete_ratings = sqlalchemy.Table("athlete_ratings", metadata_obj, autoload_with=engine)
 team_ratings = sqlalchemy.Table("team_ratings", metadata_obj, autoload_with=engine)
+max_athlete_stats = sqlalchemy.Table("max_athlete_stats", metadata_obj, autoload_with=engine)
