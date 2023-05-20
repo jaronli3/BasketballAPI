@@ -81,12 +81,12 @@ def get_team(team_name: team_options,
             ):
     """
     This endpoint returns a single team by its identifier. For each team it returns:
-        *`team_id`: The internal id of the team
-        *`team_name`: The name of the team
-        *`Wins`: Number of games the team won
-        *`Losses`: Number of games the team lost
-        *`Average Points for`: Average number of points the team scored
-        *`Average Points allowed`: Average number of points team allowed
+    *`team_id`: The internal id of the team
+    *`team_name`: The name of the team
+    *`Wins`: Number of games the team won
+    *`Losses`: Number of games the team lost
+    *`Average Points for`: Average number of points the team scored
+    *`Average Points allowed`: Average number of points team allowed
     """
     if year and not(2019 <= year <= 2023):
         raise HTTPException(status_code=400, detail="please enter a year within 2019 to 2023 (inclusive)")
@@ -135,14 +135,14 @@ def compare_team(team_1: team_options,
                  compare_by: stat_options = stat_options.wins):
     '''
     This endpoint compares between 2 and 5 teams by a single metric
-        * 'team_i': a team to be compared
-        * Compare_by must be one of the following values 
-            * `wins`: The average wins per season
-            * `points`: The average points per game
-            * `rebounds`: The average rebounds per game
-            * `assists`: The average assists per game
-            * `steals`: The average steals per game
-            * `blocks`: The average blocks per game
+    * `team_i`: a team to be compared
+    * `Compare_by` must be one of the following values 
+        * `wins`: The average wins per season
+        * `points`: The average points per game
+        * `rebounds`: The average rebounds per game
+        * `assists`: The average assists per game
+        * `steals`: The average steals per game
+        * `blocks`: The average blocks per game
     '''
 
     teams_to_compare = (

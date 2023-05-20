@@ -137,6 +137,7 @@ def add_athlete(name: str):
     To add stats of a season in which the athlete played, use add_athlete_stats.
     The endpoint returns the id of the resulting athlete that was created
     This endpoint ensures the athlete does not already exist in the database
+    * `name` a string of the name of the athlete
     """
     stmt = sqlalchemy.select(
         db.athletes.c.athlete_id
@@ -192,10 +193,10 @@ def add_athlete_season(athlete: AthleteJson):
     """
     This endpoint adds the stats from an athlete's season to the database.
     The athlete is represented by the AthleteJson, which contains
-    * athlete_id: the internal id of the athlete
-    * age: age of the athlete
-    * team_id: the team id of the athlete’s team
-    * stats: a dictionary, matching StatOptions (such as "points") to values
+    * `athlete_id`: the internal id of the athlete
+    * `age`: age of the athlete
+    * `team_id`: the team id of the athlete’s team
+    * `stats`: a dictionary, matching StatOptions (such as "points") to values
 
     This endpoints ensures that athlete_id and team_id exists in the database, and that
     the athlete year pair does not already exist in the database
