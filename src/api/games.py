@@ -84,6 +84,7 @@ class GameJson(BaseModel):
     blocks_home: int
     blocks_away: int
 
+
 @router.post("/games/add_game", tags=["games"])
 def add_game(game: GameJson):
     """

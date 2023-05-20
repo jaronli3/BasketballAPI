@@ -1,12 +1,11 @@
 from fastapi import APIRouter, HTTPException
 from enum import Enum
-from collections import Counter
 import sqlalchemy
 from fastapi.params import Query
 from sqlalchemy.exc import IntegrityError
 
 from src import database as db
-from typing import List, Dict
+from typing import List
 from pydantic import BaseModel
 
 router = APIRouter()
@@ -238,9 +237,9 @@ def add_athlete_season(athlete: AthleteJson):
             constraint_name = error_message[start_index:end_index].strip()
             raise HTTPException(status_code=404, detail="Constraint violated: " + str(constraint_name))
 
-
         refresh_max_athletes = sqlalchemy.text('''
         REFRESH MATERIALIZED VIEW max_athlete_stats;
         ''')
         conn.execute(refresh_max_athletes)
+
     return athlete_name.name

@@ -1,15 +1,11 @@
 from fastapi import APIRouter, HTTPException
 from enum import Enum
-from collections import Counter
 import sqlalchemy
-from fastapi.params import Query
 from src import database as db
-from typing import List, Dict
-import operator
 from sqlalchemy import extract
 
-
 router = APIRouter()
+
 
 class team_options(str, Enum):
     toronto_raptors = "Toronto Raptors"
@@ -43,18 +39,23 @@ class team_options(str, Enum):
     houston_rockets = "Houston Rockets"
     brooklyn_nets = "Brooklyn Nets"
 
+
 def get_team_helper(conn, team_id, year):
     games = sqlalchemy.select(db.games.c.home,
-                            db.games.c.away,
-                            db.games.c.pts_home,
-                            db.games.c.pts_away).where((
-        (db.games.c.home == team_id) | (db.games.c.away == team_id)) & (((extract("year", db.games.c.date) == year) & (extract("month", db.games.c.date) < 10)) | ((extract("year", db.games.c.date) == year - 1) & (extract("month", db.games.c.date) >= 10))))
-
+                              db.games.c.away,
+                              db.games.c.pts_home,
+                              db.games.c.pts_away).where((
+                                                                 (db.games.c.home == team_id) |
+                                                                 (db.games.c.away == team_id)) & (
+                                                                     ((extract("year", db.games.c.date) == year) &
+                                                                      (extract("month", db.games.c.date) < 10)) |
+                                                                     ((extract("year", db.games.c.date) == year - 1) &
+                                                                      (extract("month", db.games.c.date) >= 10))))
 
     games_table = conn.execute(games).fetchall()
 
     wins = points_for = points_allowed = losses = 0
-    
+
     for row in games_table:
         winner = row.home if row.pts_home > row.pts_away else row.away
         if winner == team_id:
@@ -67,18 +68,19 @@ def get_team_helper(conn, team_id, year):
         elif team_id == row.away:
             points_for += row.pts_away
             points_allowed += row.pts_home
-        
+
     games_played = wins + losses
-    stats = {"season": year, "wins": wins, "losses": losses, "average points for": round((points_for / games_played), 2),
-            "average points allowed": round((points_allowed / games_played), 2)}
-        
+    stats = {"season": year, "wins": wins, "losses": losses,
+             "average points for": round((points_for / games_played), 2),
+             "average points allowed": round((points_allowed / games_played), 2)}
+
     return stats
 
 
 @router.get("/teams/{team_name}", tags=["teams"])
-def get_team(team_name: team_options, 
-            year: int = None
-            ):
+def get_team(team_name: team_options,
+             year: int = None
+             ):
     """
     This endpoint returns a single team by its identifier. For each team it returns:
     *`team_id`: The internal id of the team
@@ -88,16 +90,15 @@ def get_team(team_name: team_options,
     *`Average Points for`: Average number of points the team scored
     *`Average Points allowed`: Average number of points team allowed
     """
-    if year and not(2019 <= year <= 2023):
+    if year and not (2019 <= year <= 2023):
         raise HTTPException(status_code=400, detail="please enter a year within 2019 to 2023 (inclusive)")
 
-   
     team = sqlalchemy.select(db.teams.c.team_id, db.teams.c.team_name, db.teams.c.team_abbrev).where(
         db.teams.c.team_name == team_name)
 
     with db.engine.begin() as conn:
         result = conn.execute(team).fetchone()
-        
+
         if not result:
             raise HTTPException(status_code=404, detail="team not found.")
 
@@ -113,9 +114,10 @@ def get_team(team_name: team_options,
             stats5 = get_team_helper(conn, team_id, 2023)
             stats = [stats1, stats2, stats3, stats4, stats5]
 
-        json = {"team_id": team_id, "team_stats":stats}
+        json = {"team_id": team_id, "team_stats": stats}
 
         return json
+
 
 class stat_options(str, Enum):
     wins = "wins"
@@ -156,17 +158,17 @@ def compare_team(team_1: team_options,
         for row in result:
             team_dict = {"team id": row.team_id, "team name": row.team_name}
             games_stmt = sqlalchemy.select(db.games.c.home,
-                                      db.games.c.pts_home,
-                                      db.games.c.reb_home,
-                                      db.games.c.ast_home,
-                                      db.games.c.stl_home,
-                                      db.games.c.blk_home,
-                                      db.games.c.away,
-                                      db.games.c.pts_away,
-                                      db.games.c.reb_away,
-                                      db.games.c.ast_away,
-                                      db.games.c.stl_away,
-                                      db.games.c.blk_away).where(
+                                           db.games.c.pts_home,
+                                           db.games.c.reb_home,
+                                           db.games.c.ast_home,
+                                           db.games.c.stl_home,
+                                           db.games.c.blk_home,
+                                           db.games.c.away,
+                                           db.games.c.pts_away,
+                                           db.games.c.reb_away,
+                                           db.games.c.ast_away,
+                                           db.games.c.stl_away,
+                                           db.games.c.blk_away).where(
                 (db.games.c.home == row.team_id) | (db.games.c.away == row.team_id))
 
             games = conn.execute(games_stmt).fetchall()
@@ -192,15 +194,15 @@ def compare_team(team_1: team_options,
             if compare_by == "wins":
                 metric = wins / 5
             elif compare_by == "points":
-                metric = round((points / (82*5)), 2)
+                metric = round((points / (82 * 5)), 2)
             elif compare_by == "rebounds":
-                metric = round((rebounds / (82*5)), 2)
+                metric = round((rebounds / (82 * 5)), 2)
             elif compare_by == "assists":
-                metric = round((assists / (82*5)), 2)
+                metric = round((assists / (82 * 5)), 2)
             elif compare_by == "steals":
-                metric = round((steals / (82*5)), 2)
+                metric = round((steals / (82 * 5)), 2)
             elif compare_by == "blocks":
-                metric = round((blocks / (82*5)), 2)
+                metric = round((blocks / (82 * 5)), 2)
 
             team_dict[str(compare_by.value)] = metric
             json.append(team_dict)
