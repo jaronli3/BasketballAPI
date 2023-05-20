@@ -146,6 +146,3 @@ def get_athlete_market_price(id: int):
 
     market_price = calculate_mp(weights, norm_predictions, mean_rating)
     return round(market_price, 2)
-
-
-# print(get_athlete_market_price(107))
