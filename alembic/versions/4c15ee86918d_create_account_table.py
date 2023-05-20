@@ -183,6 +183,33 @@ def upgrade() -> None:
 
     op.execute(create_athlete_view)
 
+    create_user = '''CREATE USER lucaspierce PASSWORD 'professorpierce1234';'''
+
+    op.execute(create_user)
+
+    create_role = '''
+    CREATE ROLE read_only;
+    '''
+
+    op.execute(create_role)
+
+    grant_user = '''
+    GRANT SELECT ON games TO read_only;
+    GRANT SELECT ON team_ratings TO read_only;
+    GRANT SELECT ON teams TO read_only;
+    GRANT SELECT ON athletes TO read_only;
+    GRANT SELECT ON athlete_ratings TO read_only;
+    GRANT SELECT ON athlete_stats TO read_only;
+    '''
+    op.execute(grant_user)
+
+    grant_role_to_user = '''
+    GRANT read_only TO lucaspierce;
+    '''
+
+    op.execute(grant_role_to_user)
+
+
 
 def downgrade() -> None:
 
