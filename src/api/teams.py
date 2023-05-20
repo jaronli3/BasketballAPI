@@ -69,7 +69,7 @@ def get_team_helper(conn, team_id, year):
             points_allowed += row.pts_home
         
     games_played = wins + losses
-    stats = {"season": f"{year - 1}-{year}", "wins": wins, "losses": losses, "average points for": round((points_for / games_played), 2),
+    stats = {"season": year, "wins": wins, "losses": losses, "average points for": round((points_for / games_played), 2),
             "average points allowed": round((points_allowed / games_played), 2)}
         
     return stats

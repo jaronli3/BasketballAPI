@@ -32,7 +32,7 @@ def get_athlete(id: int,
     
     athlete = sqlalchemy.select(db.athlete_stats, db.athletes, db.teams).select_from(
         db.athletes.join(db.athlete_stats, isouter=True).join(db.teams, isouter=True)
-    ).where(db.athlete_stats.c.athlete_id == id)
+    ).where(db.athletes.c.athlete_id == id)
 
     with db.engine.connect() as conn:
         name = conn.execute(athlete).fetchone()
@@ -44,23 +44,27 @@ def get_athlete(id: int,
             athlete = athlete.where(db.athlete_stats.c.year == year)
 
         athlete = conn.execute(athlete).fetchall()
-        stats = [{
-            "year": row.year,
-            "age": row.age,
-            "team_id": row.team_id,
-            "team_name": row.team_name,
-            "games_played": row.games_played,
-            "minutes_played": row.minutes_played,
-            "field_goal_percentage": row.field_goal_percentage,
-            "free_throw_percentage": row.free_throw_percentage,
-            "total_rebounds": row.total_rebounds,
-            "assists": row.assists,
-            "steals": row.steals,
-            "blocks": row.blocks,
-            "turnovers": row.turnovers,
-            "points": row.points
-        }
-            for row in athlete]
+
+        if len(athlete) == 0 or not athlete[0].year:
+            stats = []
+        else:
+            stats = [{
+                "year": row.year,
+                "age": row.age,
+                "team_id": row.team_id,
+                "team_name": row.team_name,
+                "games_played": row.games_played,
+                "minutes_played": row.minutes_played,
+                "field_goal_percentage": row.field_goal_percentage,
+                "free_throw_percentage": row.free_throw_percentage,
+                "total_rebounds": row.total_rebounds,
+                "assists": row.assists,
+                "steals": row.steals,
+                "blocks": row.blocks,
+                "turnovers": row.turnovers,
+                "points": row.points
+            }
+                for row in athlete]
 
         json = {
             "athlete_id": id,
