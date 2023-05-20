@@ -98,6 +98,9 @@ def add_game(game: GameJson):
     if game.home_team == game.away_team:
         raise HTTPException(status_code=400, detail="Teams are the same")
 
+    if game.points_home == game.points_away:
+        raise HTTPException(status_code=400, detail="Point values cannot be equal")
+
     with db.engine.begin() as conn:
         game_id = conn.execute(
             sqlalchemy.select(
