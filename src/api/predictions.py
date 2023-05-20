@@ -25,6 +25,7 @@ def get_team_market_price(team: team_options):
 def get_athlete_market_price(id: int):
     """
     This endpoint returns the current market price of the specified athlete
+    * `id` the id of the athlete 
     """
     start = time.time()
 
