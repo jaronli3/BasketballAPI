@@ -139,12 +139,12 @@ def add_athlete(name: str):
     This endpoint ensures the athlete does not already exist in the database
     * `name` a string of the name of the athlete
     """
-    stmt = sqlalchemy.select(
+    potential_athlete_id = sqlalchemy.select(
         db.athletes.c.athlete_id
     ).where(db.athletes.c.name == name)
 
     with db.engine.begin() as conn:
-        result = conn.execute(stmt).fetchone()
+        result = conn.execute(potential_athlete_id).fetchone()
 
         if result:
             raise HTTPException(status_code=400, detail="athlete already exists in database")
@@ -253,13 +253,3 @@ def add_athlete_season(athlete: AthleteJson):
         conn.execute(refresh_max_athletes)
 
     return athlete_name.name
-
-
-
-# stats = AthleteStats(games_played=0, minutes_played=0, field_goal_percentage=0,
-#                      free_throw_percentage=0, total_rebounds=0, assists=0, steals=0, blocks=0, turnovers=0, points=0)
-# athlete_json = AthleteJson(athlete_id=969, age=0, year=2023, team_id=0, stats=stats)
-#
-#
-#
-# print(add_athlete_season(athlete_json))
