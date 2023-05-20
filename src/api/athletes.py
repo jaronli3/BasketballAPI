@@ -106,7 +106,7 @@ def compare_athletes(
     if not(2019 <= year <= 2023):
         raise HTTPException(status_code=400, detail="please enter a year within 2019 to 2023 (inclusive)")
 
-    if len(athlete_ids) < 2:
+    if not athlete_ids or len(athlete_ids) < 2:
         raise HTTPException(status_code=400, detail="athlete list given does not contain enough athletes.")
 
     athlete_stats = (
