@@ -19,7 +19,7 @@ def add_team_rating(rat: Rating):
     The endpoint returns the id of the newly generated team rating
     """
 
-    with db.engine.connect() as conn:
+    with db.engine.begin() as conn:
         try:
             team_id = conn.execute(
                 sqlalchemy.text(
@@ -50,8 +50,9 @@ def add_team_rating(rat: Rating):
                 "rating": rat.rating
             }
         ).scalar_one()
-        conn.commit()
+
     return inserted_rating
+
 
 @router.post("/athleteratings/", tags=["ratings"])
 def add_athlete_rating(rat: Rating):
@@ -62,7 +63,7 @@ def add_athlete_rating(rat: Rating):
     The endpoint returns the id of the newly generated athlete rating
     """
 
-    with db.engine.connect() as conn:
+    with db.engine.begin() as conn:
         try:
             athlete_id = conn.execute(
                 sqlalchemy.text(
@@ -92,6 +93,6 @@ def add_athlete_rating(rat: Rating):
                 "rating": rat.rating
             }
         ).scalar_one()
-        conn.commit()
+
     return inserted_rating
 

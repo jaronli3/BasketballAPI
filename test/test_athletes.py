@@ -44,7 +44,7 @@ def test_compare_athletes_400():
 
 
 def test_add_athlete():
-    with db.engine.connect() as conn:
+    with db.engine.begin() as conn:
         athlete_id = add_athlete("Test Athlete")
         stats = AthleteStats(games_played=0, minutes_played=0, field_goal_percentage=0.0,
                              free_throw_percentage=0.0, total_rebounds=0, assists=0, steals=0, blocks=0, turnovers=0, points=0)
@@ -63,8 +63,6 @@ def test_add_athlete():
         conn.execute(
             db.athlete_stats.delete().where(db.athlete_stats.c.athlete_id == athlete_id)
         )
-
-        conn.commit()
 
 
 def test_add_athlete_400():

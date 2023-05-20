@@ -95,7 +95,7 @@ def get_team(team_name: team_options,
     team = sqlalchemy.select(db.teams.c.team_id, db.teams.c.team_name, db.teams.c.team_abbrev).where(
         db.teams.c.team_name == team_name)
 
-    with db.engine.connect() as conn:
+    with db.engine.begin() as conn:
         result = conn.execute(team).fetchone()
         
         if not result:
@@ -150,7 +150,7 @@ def compare_team(team_1: team_options,
             .where(sqlalchemy.column('team_name').in_([team_1, team_2, team_3, team_4, team_5]))
     )
 
-    with db.engine.connect() as conn:
+    with db.engine.begin() as conn:
         result = conn.execute(teams_to_compare).fetchall()
         json = []
         for row in result:

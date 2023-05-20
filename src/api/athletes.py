@@ -34,7 +34,7 @@ def get_athlete(id: int,
         db.athletes.join(db.athlete_stats, isouter=True).join(db.teams, isouter=True)
     ).where(db.athletes.c.athlete_id == id)
 
-    with db.engine.connect() as conn:
+    with db.engine.begin() as conn:
         name = conn.execute(athlete).fetchone()
 
         if not name:
@@ -113,7 +113,7 @@ def compare_athletes(
             .order_by(sqlalchemy.desc(sqlalchemy.column(stat)))
     )
 
-    with db.engine.connect() as conn:
+    with db.engine.begin() as conn:
         result = conn.execute(athlete_stats)
 
         json = []
@@ -143,7 +143,7 @@ def add_athlete(name: str):
         db.athletes.c.athlete_id
     ).where(db.athletes.c.name == name)
 
-    with db.engine.connect() as conn:
+    with db.engine.begin() as conn:
         result = conn.execute(stmt).fetchone()
 
         if result:
@@ -162,7 +162,6 @@ def add_athlete(name: str):
             "name": name
         }
         conn.execute(db.athletes.insert().values(**new_athlete))
-        conn.commit()
 
     return athlete_id
 
@@ -213,7 +212,7 @@ def add_athlete_season(athlete: AthleteJson):
         db.athlete_stats.c.athlete_id
     ).where((db.athlete_stats.c.athlete_id == athlete.athlete_id) & (db.athlete_stats.c.year == athlete.year))
 
-    with db.engine.connect() as conn:
+    with db.engine.begin() as conn:
         athlete_name = conn.execute(athlete_name).fetchone()
 
         team_name = conn.execute(team_name).fetchone()
@@ -248,13 +247,10 @@ def add_athlete_season(athlete: AthleteJson):
 
         conn.execute(db.athlete_stats.insert().values(**new_athlete_season))
 
-
         refresh_max_athletes = sqlalchemy.text('''
         REFRESH MATERIALIZED VIEW max_athlete_stats;
         ''')
         conn.execute(refresh_max_athletes)
-
-        conn.commit()
 
     return athlete_name.name
 

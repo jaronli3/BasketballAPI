@@ -36,12 +36,10 @@ def test_add_game():
     with open("test/games/nets_rockets_test_add.json") as f:
         assert response.json() == json.load(f)
 
-    with db.engine.connect() as conn:
+    with db.engine.begin() as conn:
         conn.execute(
             db.games.delete().where(db.games.c.game_id == game_id)
         )
-
-        conn.commit()
 
 
 def test_add_game_same_team():

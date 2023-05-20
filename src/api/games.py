@@ -37,7 +37,7 @@ def get_game(
         db.teams.c.team_id
     ).where(away_team == db.teams.c.team_name)
 
-    with db.engine.connect() as conn:
+    with db.engine.begin() as conn:
         home_team_id = conn.execute(home_team_id_stmt).fetchone().team_id
         away_team_id = conn.execute(away_team_id_stmt).fetchone().team_id
 
@@ -98,7 +98,7 @@ def add_game(game: GameJson):
     if game.home_team == game.away_team:
         raise HTTPException(status_code=400, detail="Teams are the same")
 
-    with db.engine.connect() as conn:
+    with db.engine.begin() as conn:
         game_id = conn.execute(
             sqlalchemy.select(
                 db.games.c.game_id
@@ -137,6 +137,5 @@ def add_game(game: GameJson):
             "blk_away": game.blocks_away
         }
         conn.execute(db.games.insert().values(**game))
-        conn.commit()
 
     return game_id

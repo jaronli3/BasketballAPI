@@ -33,7 +33,7 @@ def add_user(userinfo: UserInfo):
     Returns the id of the new user created 
     """
 
-    with db.engine.connect() as conn:
+    with db.engine.begin() as conn:
         inserted_user = conn.execute(
             sqlalchemy.text(
             """
@@ -48,7 +48,6 @@ def add_user(userinfo: UserInfo):
             }
         )
         user = inserted_user.fetchone()
-        conn.commit()
     return user.user_id
 
 @router.post("/loginuser/", tags=["login"])
@@ -63,7 +62,7 @@ def user_login(userinfo: UserInfo):
     Returns a string for if the user login was successful 
     """
 
-    with db.engine.connect() as conn:
+    with db.engine.begin() as conn:
         hashed_password = conn.execute(
             sqlalchemy.text(
             """
