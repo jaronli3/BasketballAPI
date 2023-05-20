@@ -122,7 +122,7 @@ def compare_athletes(
                 {
                     "athlete_id": row.athlete_id,
                     "name": conn.execute(sqlalchemy.select(db.athletes.c.name)
-                                      .where(db.athletes.c.athlete_id == row.athlete_id)).fetchone().name,
+                                      .where(db.athletes.c.athlete_id == row.athlete_id)).scalar_one(),
                     stat: row.stat
                 }
             )
@@ -155,7 +155,7 @@ def add_athlete(name: str):
             )
             .order_by(sqlalchemy.desc(db.athletes.c.athlete_id))
             .limit(1)
-        ).fetchone().athlete_id + 1
+        ).scalar_one() + 1
 
         new_athlete = {
             "athlete_id": athlete_id,

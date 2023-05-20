@@ -38,8 +38,8 @@ def get_game(
     ).where(away_team == db.teams.c.team_name)
 
     with db.engine.begin() as conn:
-        home_team_id = conn.execute(home_team_id_stmt).fetchone().team_id
-        away_team_id = conn.execute(away_team_id_stmt).fetchone().team_id
+        home_team_id = conn.execute(home_team_id_stmt).scalar_one()
+        away_team_id = conn.execute(away_team_id_stmt).scalar_one()
 
         result = conn.execute(
             sqlalchemy.select(
@@ -108,19 +108,19 @@ def add_game(game: GameJson):
             )
             .order_by(sqlalchemy.desc(db.games.c.game_id))
             .limit(1)
-        ).fetchone().game_id + 1
+        ).scalar_one() + 1
 
         home_team_id = conn.execute(
             sqlalchemy.select(
                 db.teams.c.team_id
             ).where(db.teams.c.team_name == game.home_team)
-        ).fetchone().team_id
+        ).scalar_one()
 
         away_team_id = conn.execute(
             sqlalchemy.select(
                 db.teams.c.team_id
             ).where(db.teams.c.team_name == game.away_team)
-        ).fetchone().team_id
+        ).scalar_one()
 
         game = {
             "game_id": game_id,

@@ -47,8 +47,8 @@ def add_user(userinfo: UserInfo):
                 "password": hash_and_salt_password(userinfo.password)
             }
         )
-        user = inserted_user.fetchone()
-    return user.user_id
+        user = inserted_user.scalar_one()
+    return user
 
 @router.post("/loginuser/", tags=["login"])
 def user_login(userinfo: UserInfo):
