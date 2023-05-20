@@ -3,6 +3,8 @@ from enum import Enum
 from collections import Counter
 import sqlalchemy
 from fastapi.params import Query
+from sqlalchemy.exc import IntegrityError
+
 from src import database as db
 from typing import List, Dict
 from pydantic import BaseModel
@@ -205,28 +207,10 @@ def add_athlete_season(athlete: AthleteJson):
     if not(2019 <= athlete.year <= 2023):
         raise HTTPException(status_code=400, detail="please enter a year within 2019 to 2023 (inclusive)")
 
-    athlete_name = sqlalchemy.select(db.athletes.c.name).where(db.athletes.c.athlete_id == athlete.athlete_id)
-    team_name = sqlalchemy.select(db.teams.c.team_name).where(db.teams.c.team_id == athlete.team_id)
-
-    athlete_year = sqlalchemy.select(
-        db.athlete_stats.c.athlete_id
-    ).where((db.athlete_stats.c.athlete_id == athlete.athlete_id) & (db.athlete_stats.c.year == athlete.year))
+    athlete_name_stmt = sqlalchemy.select(db.athletes.c.name).where(db.athletes.c.athlete_id == athlete.athlete_id)
 
     with db.engine.begin() as conn:
-        athlete_name = conn.execute(athlete_name).fetchone()
-
-        team_name = conn.execute(team_name).fetchone()
-
-        athlete_year = conn.execute(athlete_year).fetchone()
-
-        if not athlete_name:
-            raise HTTPException(status_code=404, detail="athlete does not exist in the database")
-
-        if not team_name:
-            raise HTTPException(status_code=404, detail="team does not exist in the database")
-
-        if athlete_year:
-            raise HTTPException(status_code=400, detail="athlete year pair already exists in the database")
+        athlete_name = conn.execute(athlete_name_stmt).fetchone()
 
         new_athlete_season = {
             "athlete_id": athlete.athlete_id,
@@ -245,11 +229,18 @@ def add_athlete_season(athlete: AthleteJson):
             "points": athlete.stats.points
         }
 
-        conn.execute(db.athlete_stats.insert().values(**new_athlete_season))
+        try:
+            conn.execute(db.athlete_stats.insert().values(**new_athlete_season))
+        except IntegrityError as integrity_error:
+            error_message = str(integrity_error)
+            start_index = error_message.find('constraint') + len('constraint') + 2
+            end_index = error_message.find('Key', start_index) - 11
+            constraint_name = error_message[start_index:end_index].strip()
+            raise HTTPException(status_code=404, detail="Constraint violated: " + str(constraint_name))
+
 
         refresh_max_athletes = sqlalchemy.text('''
         REFRESH MATERIALIZED VIEW max_athlete_stats;
         ''')
         conn.execute(refresh_max_athletes)
-
     return athlete_name.name
