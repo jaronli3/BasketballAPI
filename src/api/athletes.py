@@ -28,9 +28,9 @@ def get_athlete(id: int,
     age, team_id, team_name, games_played, minutes_played, field_goal_percentage, free_throw_percentage,
     total_rebounds, assists, steals, blocks, points
     """
-    if year and not(2019 <= year <= 2023):
+    if year and not (2019 <= year <= 2023):
         raise HTTPException(status_code=400, detail="please enter a year within 2019 to 2023 (inclusive)")
-    
+
     athlete = sqlalchemy.select(db.athlete_stats, db.athletes, db.teams).select_from(
         db.athletes.join(db.athlete_stats, isouter=True).join(db.teams, isouter=True)
     ).where(db.athletes.c.athlete_id == id)
@@ -101,34 +101,47 @@ def compare_athletes(
     * `year`: the year to compare the athletes
     * `athlete_ids`: list of athlete names to compare (must have length >1)
     * `stat`: stat to compare athletes by (defaults to points)
+    If the stat is none, then the athlete has no data for the given year.
     """
-    if not(2019 <= year <= 2023):
+    if not (2019 <= year <= 2023):
         raise HTTPException(status_code=400, detail="please enter a year within 2019 to 2023 (inclusive)")
 
     if not athlete_ids or len(athlete_ids) < 2:
         raise HTTPException(status_code=400, detail="athlete list given does not contain enough athletes.")
 
-    athlete_stats = (
-        sqlalchemy.select(db.athlete_stats.c.athlete_id, sqlalchemy.column(stat).label('stat'))
-            .where((sqlalchemy.column('athlete_id').in_(athlete_ids)) & (db.athlete_stats.c.year == year))
-            .order_by(sqlalchemy.desc(sqlalchemy.column(stat)))
-    )
+    athlete_stats = sqlalchemy.select(db.athlete_stats, db.athletes).select_from(
+        db.athletes.join(db.athlete_stats, isouter=True)
+    ).where(
+        (db.athletes.c.athlete_id.in_(athlete_ids) & (db.athlete_stats.c.year == year))
+    ).order_by(
+        sqlalchemy.desc(sqlalchemy.column(stat)))
 
     with db.engine.begin() as conn:
-        result = conn.execute(athlete_stats)
+        result = conn.execute(athlete_stats).fetchall()
 
-        json = []
-        for row in result.fetchall():
+        json = [
+            {
+                "athlete_id": row.athlete_id,
+                "name": row.name,
+                stat.value: getattr(row, stat)
+            }
+            for row in result]
+
+        included_ids = [athlete.get("athlete_id") for athlete in json]
+        excluded_ids = [x for x in athlete_ids if x not in included_ids]
+
+        excluded_athletes_stmt = sqlalchemy.select(db.athletes.c.athlete_id, db.athletes.c.name).where(sqlalchemy.column('athlete_id').in_(excluded_ids))
+        excluded_names = conn.execute(excluded_athletes_stmt).fetchall()
+
+        for row in excluded_names:
             json.append(
                 {
                     "athlete_id": row.athlete_id,
-                    "name": conn.execute(sqlalchemy.select(db.athletes.c.name)
-                                      .where(db.athletes.c.athlete_id == row.athlete_id)).scalar_one(),
-                    stat: row.stat
+                    "name": row.name,
+                    stat.value: None
                 }
             )
-
-        return json
+    return json
 
 
 @router.post("/athletes/", tags=["athletes"])
@@ -154,8 +167,8 @@ def add_athlete(name: str):
             sqlalchemy.select(
                 db.athletes.c.athlete_id
             )
-            .order_by(sqlalchemy.desc(db.athletes.c.athlete_id))
-            .limit(1)
+                .order_by(sqlalchemy.desc(db.athletes.c.athlete_id))
+                .limit(1)
         ).scalar_one() + 1
 
         new_athlete = {
@@ -203,7 +216,7 @@ def add_athlete_season(athlete: AthleteJson):
     The endpoint returns the name of the athlete
     """
 
-    if not(2019 <= athlete.year <= 2023):
+    if not (2019 <= athlete.year <= 2023):
         raise HTTPException(status_code=400, detail="please enter a year within 2019 to 2023 (inclusive)")
 
     athlete_name_stmt = sqlalchemy.select(db.athletes.c.name).where(db.athletes.c.athlete_id == athlete.athlete_id)
