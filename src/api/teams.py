@@ -147,6 +147,8 @@ def compare_team(team_1: team_options,
         * `blocks`: The average blocks per game
     '''
 
+    num_ssn_games = 82
+
     teams_to_compare = (
         sqlalchemy.select(db.teams.c.team_id, db.teams.c.team_name)
             .where(sqlalchemy.column('team_name').in_([team_1, team_2, team_3, team_4, team_5]))
@@ -194,15 +196,15 @@ def compare_team(team_1: team_options,
             if compare_by == "wins":
                 metric = wins / 5
             elif compare_by == "points":
-                metric = round((points / (82 * 5)), 2)
+                metric = round((points / (num_ssn_games * 5)), 2)
             elif compare_by == "rebounds":
-                metric = round((rebounds / (82 * 5)), 2)
+                metric = round((rebounds / (num_ssn_games * 5)), 2)
             elif compare_by == "assists":
-                metric = round((assists / (82 * 5)), 2)
+                metric = round((assists / (num_ssn_games * 5)), 2)
             elif compare_by == "steals":
-                metric = round((steals / (82 * 5)), 2)
+                metric = round((steals / (num_ssn_games * 5)), 2)
             elif compare_by == "blocks":
-                metric = round((blocks / (82 * 5)), 2)
+                metric = round((blocks / (num_ssn_games * 5)), 2)
 
             team_dict[str(compare_by.value)] = metric
             json.append(team_dict)
