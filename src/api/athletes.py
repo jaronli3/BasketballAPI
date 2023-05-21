@@ -13,11 +13,12 @@ router = APIRouter()
 @router.get("/athletes/{id}", tags=["athletes"])
 def get_athlete(id: int,
                 year: int = None
-                ):
+                ): 
     """ 
     This endpoint returns a single athlete by its identifier. For each athlete it returns:
     * `athlete_id`: The internal id of the athlete
     * `name`: The name of the athlete
+    * `TEMP`
 
     If the year argument is specified, the endpoint returns athlete stats for that year.
     If the year argument is not specified, for each NBA season the athlete was a part of, the endpoint returns
