@@ -28,7 +28,7 @@ def get_game(
     * `date`: the date the game was held
     """
     if home_team == away_team:
-        raise HTTPException(status_code=400, detail="Teams are the same")
+        raise HTTPException(status_code=400, detail="Home team and away team cannot be the same")
 
     if winner and not(winner == home_team or winner == away_team):
         raise HTTPException(status_code=400, detail="Please select a valid winner")
