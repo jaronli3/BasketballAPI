@@ -12,7 +12,8 @@ router = APIRouter()
 @router.get("/games/", tags=["games"])
 def get_game(
         home_team: team_options,
-        away_team: team_options
+        away_team: team_options,
+        winner: team_options = None
 ):
     """
     This endpoint returns a list of games by the teams provided ordered by date
@@ -28,6 +29,9 @@ def get_game(
     """
     if home_team == away_team:
         raise HTTPException(status_code=400, detail="Teams are the same")
+
+    if winner and not(winner == home_team or winner == away_team):
+        raise HTTPException(status_code=400, detail="Please select a valid winner")
 
     home_team_id_stmt = sqlalchemy.select(
         db.teams.c.team_id
@@ -66,6 +70,10 @@ def get_game(
              "date": str(game.date)}
             for game in result
         ]
+
+        if winner:
+            json = [game for game in json if game.get("winner") == winner.value]
+
         return json
 
 
