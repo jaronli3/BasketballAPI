@@ -3,6 +3,7 @@ from enum import Enum
 import sqlalchemy
 from src import database as db
 from sqlalchemy import extract
+import urllib.parse
 
 router = APIRouter()
 
@@ -90,6 +91,7 @@ def get_team(team_name: team_options,
     *`Average Points for`: Average number of points the team scored
     *`Average Points allowed`: Average number of points team allowed
     """
+    team_name = urllib.parse.unquote(team_name)
     if year and not (2019 <= year <= 2023):
         raise HTTPException(status_code=400, detail="please enter a year within 2019 to 2023 (inclusive)")
 
@@ -147,6 +149,15 @@ def compare_team(team_1: team_options,
         * `blocks`: The average blocks per game
     '''
 
+    team_1 = urllib.parse.unquote(team_1)
+    team_2 = urllib.parse.unquote(team_2)
+    if team_3:
+        team_3 = urllib.parse.unquote(team_3)
+    if team_4:
+        team_4 = urllib.parse.unquote(team_4)
+    if team_5:
+        team_5 = urllib.parse.unquote(team_5)
+
     num_ssn_games = 82
 
     teams_to_compare = (
@@ -177,7 +188,7 @@ def compare_team(team_1: team_options,
             wins = points = rebounds = assists = steals = blocks = 0
 
             for game in games:
-                winner = row.home if row.pts_home > row.pts_away else row.away
+                winner = game.home if game.pts_home > game.pts_away else game.away
                 if winner == row.team_id:
                     wins += 1
                 if game.home == row.team_id:
