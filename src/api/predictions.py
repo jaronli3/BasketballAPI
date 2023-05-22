@@ -31,6 +31,8 @@ def normalize_predictions(predictions, max_values):
         max_val = max_values.get(key)
         if pred and max_val and max_val != 0:
             norm_predictions[key] = pred / max_val
+        else:
+            norm_predictions[key] = 0
     return norm_predictions
 
 
@@ -41,11 +43,11 @@ def calculate_mp(weights, norm_predictions, mean_rating):
 
 
 @router.get("/predictions/team", tags=["predictions"])
-def get_team_market_price(team: team_options):
+def get_team_market_price(team_id: int):
     """
     This endpoint returns the current market price of the specified team
     """
-    team_stats_json = teams.get_team(team).get("team_stats")
+    team_stats_json = teams.get_team(team_id).get("team_stats")
 
     teams_metadata = ["season", "losses"]
     predictions = get_predictions(team_stats_json, teams_metadata, "season")
@@ -60,9 +62,6 @@ def get_team_market_price(team: team_options):
 
     # Ratings
     with db.engine.begin() as conn:
-        team_id_stmt = sqlalchemy.select(db.teams.c.team_id).where(db.teams.c.team_name == team.value)
-        team_id = conn.execute(team_id_stmt).scalar_one()
-
         ratings_stmt = sqlalchemy.select(db.team_ratings.c.rating).where(db.team_ratings.c.team_id == team_id)
         ratings = conn.execute(ratings_stmt).fetchall()
 
