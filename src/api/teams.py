@@ -78,8 +78,8 @@ def get_team_helper(conn, team_id, year):
     return stats
 
 
-@router.get("/teams/{team_name}", tags=["teams"])
-def get_team(team_name: team_options,
+@router.get("/teams/{team_id}", tags=["teams"])
+def get_team(team_id: int,
              year: int = None
              ):
     """
@@ -91,20 +91,19 @@ def get_team(team_name: team_options,
     *`Average Points for`: Average number of points the team scored
     *`Average Points allowed`: Average number of points team allowed
     """
-    team_name = urllib.parse.unquote(team_name)
+
     if year and not (2019 <= year <= 2023):
         raise HTTPException(status_code=400, detail="please enter a year within 2019 to 2023 (inclusive)")
 
     team = sqlalchemy.select(db.teams.c.team_id, db.teams.c.team_name, db.teams.c.team_abbrev).where(
-        db.teams.c.team_name == team_name)
+        db.teams.c.team_id == team_id)
 
     with db.engine.begin() as conn:
         result = conn.execute(team).fetchone()
+        team_name = result.team_name
 
         if not result:
             raise HTTPException(status_code=404, detail="team not found.")
-
-        team_id = result.team_id
 
         if year:
             stats = [get_team_helper(conn, team_id, year)]
@@ -116,7 +115,7 @@ def get_team(team_name: team_options,
             stats5 = get_team_helper(conn, team_id, 2023)
             stats = [stats1, stats2, stats3, stats4, stats5]
 
-        json = {"team_id": team_id, "team_stats": stats}
+        json = {"team_id": team_id, "team_name": team_name, "team_stats": stats}
 
         return json
 
