@@ -31,6 +31,8 @@ def normalize_predictions(predictions, max_values):
         max_val = max_values.get(key)
         if pred and max_val and max_val != 0:
             norm_predictions[key] = pred / max_val
+        else:
+            norm_predictions[key] = 0
     return norm_predictions
 
 
