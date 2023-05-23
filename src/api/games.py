@@ -8,7 +8,6 @@ from pydantic import BaseModel
 
 router = APIRouter()
 
-
 @router.get("/games/", tags=["games"])
 def get_game(
         home_team: team_options,

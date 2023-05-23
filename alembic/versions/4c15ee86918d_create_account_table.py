@@ -17,7 +17,6 @@ down_revision = None
 branch_labels = None
 depends_on = None
 
-prefix = "/Users/zach/Desktop/CSC_365/Project/"
 
 
 
@@ -36,7 +35,7 @@ def upgrade() -> None:
         Column("name", Text)
     )
 
-    with open(prefix + "data/athletes.csv", mode="r", encoding="utf-8-sig") as csv_file:
+    with open("data/athletes.csv", mode="r", encoding="utf-8-sig") as csv_file:
         op.bulk_insert(athletes, [row for row in csv.DictReader(csv_file, skipinitialspace=True)])
 
     # Teams
@@ -54,7 +53,7 @@ def upgrade() -> None:
         Column("team_name", Text)
     )
 
-    with open(prefix + "data/teams.csv", mode="r", encoding="utf-8-sig") as csv_file:
+    with open("data/teams.csv", mode="r", encoding="utf-8-sig") as csv_file:
         op.bulk_insert(teams, [row for row in csv.DictReader(csv_file, skipinitialspace=True)])
 
     # Athlete Stats
@@ -96,7 +95,7 @@ def upgrade() -> None:
         Column("points", Integer)
     )
 
-    with open(prefix + "data/athlete_stats.csv", mode="r", encoding="utf-8-sig") as csv_file:
+    with open("data/athlete_stats.csv", mode="r", encoding="utf-8-sig") as csv_file:
         op.bulk_insert(athlete_stats, [row for row in csv.DictReader(csv_file, skipinitialspace=True)])
 
     # Games
@@ -138,7 +137,7 @@ def upgrade() -> None:
         Column("blk_away", Integer),
     )
 
-    with open(prefix + "data/games.csv", mode="r", encoding="utf-8-sig") as csv_file:
+    with open("data/games.csv", mode="r", encoding="utf-8-sig") as csv_file:
         op.bulk_insert(games, [row for row in csv.DictReader(csv_file, skipinitialspace=True)])
 
     # Users
