@@ -2,17 +2,22 @@ from fastapi import APIRouter, HTTPException
 import sqlalchemy
 from datetime import date
 from src import database as db
-from src.api.teams import team_options
 from pydantic import BaseModel
-
+from enum import Enum
 
 router = APIRouter()
 
+
+class winner_options(str, Enum):
+    home = "home"
+    away = "away"
+
+
 @router.get("/games/", tags=["games"])
 def get_game(
-        home_team: team_options,
-        away_team: team_options,
-        winner: team_options = None
+        home_team_id: int,
+        away_team_id: int,
+        winner: winner_options = None
 ):
     """
     This endpoint returns a list of games by the teams provided ordered by date
@@ -26,24 +31,13 @@ def get_game(
     * `away_team_score`: score of away team
     * `date`: the date the game was held
     """
-    if home_team == away_team:
+    if home_team_id == away_team_id:
         raise HTTPException(status_code=400, detail="Home team and away team cannot be the same")
 
-    if winner and not(winner == home_team or winner == away_team):
-        raise HTTPException(status_code=400, detail="Please select a valid winner")
-
-    home_team_id_stmt = sqlalchemy.select(
-        db.teams.c.team_id
-    ).where(home_team == db.teams.c.team_name)
-
-    away_team_id_stmt = sqlalchemy.select(
-        db.teams.c.team_id
-    ).where(away_team == db.teams.c.team_name)
+    home_team_stmt = sqlalchemy.select(db.teams.c.team_name).where(db.teams.c.team_id == home_team_id)
+    away_team_stmt = sqlalchemy.select(db.teams.c.team_name).where(db.teams.c.team_id == away_team_id)
 
     with db.engine.begin() as conn:
-        home_team_id = conn.execute(home_team_id_stmt).scalar_one()
-        away_team_id = conn.execute(away_team_id_stmt).scalar_one()
-
         result = conn.execute(
             sqlalchemy.select(
                 db.games.c.game_id,
@@ -59,26 +53,31 @@ def get_game(
         if len(result) == 0:
             raise HTTPException(status_code=404, detail="No games found")
 
+        home_team = conn.execute(home_team_stmt).scalar_one()
+        away_team = conn.execute(away_team_stmt).scalar_one()
+
         json = [
             {"game_id": game.game_id,
-             "home_team": home_team.value,
-             "away_team": away_team.value,
-             "winner": home_team.value if game.pts_home > game.pts_away else away_team.value,
+             "home_team": home_team,
+             "away_team": away_team,
+             "winner": home_team if game.pts_home > game.pts_away else away_team,
              "home_team_score": game.pts_home,
              "away_team_score": game.pts_away,
              "date": str(game.date)}
             for game in result
         ]
 
-        if winner:
-            json = [game for game in json if game.get("winner") == winner.value]
+        if winner == winner_options.home:
+            json = [game for game in json if game.get("winner") == home_team]
+        elif winner == winner_options.away:
+            json = [game for game in json if game.get("winner") == away_team]
 
         return json
 
 
 class GameJson(BaseModel):
-    home_team: team_options
-    away_team: team_options
+    home_team_id: int
+    away_team_id: int
     date: date
     points_home: int
     points_away: int
@@ -103,7 +102,7 @@ def add_game(game: GameJson):
 
     The endpoint returns the id of the game created
     """
-    if game.home_team == game.away_team:
+    if game.home_team_id == game.away_team_id:
         raise HTTPException(status_code=400, detail="Teams are the same")
 
     if game.points_home == game.points_away:
@@ -118,22 +117,10 @@ def add_game(game: GameJson):
             .limit(1)
         ).scalar_one() + 1
 
-        home_team_id = conn.execute(
-            sqlalchemy.select(
-                db.teams.c.team_id
-            ).where(db.teams.c.team_name == game.home_team)
-        ).scalar_one()
-
-        away_team_id = conn.execute(
-            sqlalchemy.select(
-                db.teams.c.team_id
-            ).where(db.teams.c.team_name == game.away_team)
-        ).scalar_one()
-
         postgame = {
             "game_id": game_id,
-            "home": home_team_id,
-            "away": away_team_id,
+            "home": game.home_team_id,
+            "away": game.away_team_id,
             "date": game.date,
             "pts_home": game.points_home,
             "pts_away": game.points_away,
