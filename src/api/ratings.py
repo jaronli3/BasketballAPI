@@ -15,7 +15,7 @@ class Rating(BaseModel):
 def add_team_rating(rat: Rating):
     """
     This endpoint adds a user-generated team rating to the team_ratings table 
-    * `rat`: contains the team name (str) and rating (as int 1 --> 5) of the team 
+    * `rat`: contains the team name (str) and rating (as a number 1 --> 5) of the team 
 
     The endpoint returns the id of the newly generated team rating
     """
@@ -58,7 +58,7 @@ def add_team_rating(rat: Rating):
 def add_athlete_rating(rat: Rating):
     """
     This endpoint adds a user-generated athlete rating to the athlete_ratings table 
-    * `rat`: contains the athlete name (str) and rating (as int 1 --> 5) of the team 
+    * `rat`: contains the athlete name (str) and rating (as a number 1 --> 5) of the team 
 
     The endpoint returns the id of the newly generated athlete rating
     """
