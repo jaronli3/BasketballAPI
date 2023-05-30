@@ -63,6 +63,10 @@ def get_team_market_price(team_id: int):
     # Ratings
     with db.engine.begin() as conn:
         ratings_stmt = sqlalchemy.select(db.team_ratings.c.rating).where(db.team_ratings.c.team_id == team_id)
+
+        if ratings_stmt is None:
+            raise HTTPException(status_code=404, detail="team not found")
+
         ratings = conn.execute(ratings_stmt).fetchall()
 
     ratings = [rating_instance.rating for rating_instance in ratings]
