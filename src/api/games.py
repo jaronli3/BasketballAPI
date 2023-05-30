@@ -2,7 +2,6 @@ from fastapi import APIRouter, HTTPException
 import sqlalchemy
 from datetime import date
 from src import database as db
-from src.api.teams import team_options
 from pydantic import BaseModel
 from enum import Enum
 
@@ -77,8 +76,8 @@ def get_game(
 
 
 class GameJson(BaseModel):
-    home_team: team_options
-    away_team: team_options
+    home_team_id: int
+    away_team_id: int
     date: date
     points_home: int
     points_away: int
@@ -103,7 +102,7 @@ def add_game(game: GameJson):
 
     The endpoint returns the id of the game created
     """
-    if game.home_team == game.away_team:
+    if game.home_team_id == game.away_team_id:
         raise HTTPException(status_code=400, detail="Teams are the same")
 
     if game.points_home == game.points_away:
@@ -118,22 +117,10 @@ def add_game(game: GameJson):
             .limit(1)
         ).scalar_one() + 1
 
-        home_team_id = conn.execute(
-            sqlalchemy.select(
-                db.teams.c.team_id
-            ).where(db.teams.c.team_name == game.home_team)
-        ).scalar_one()
-
-        away_team_id = conn.execute(
-            sqlalchemy.select(
-                db.teams.c.team_id
-            ).where(db.teams.c.team_name == game.away_team)
-        ).scalar_one()
-
         postgame = {
             "game_id": game_id,
-            "home": home_team_id,
-            "away": away_team_id,
+            "home": game.home_team_id,
+            "away": game.away_team_id,
             "date": game.date,
             "pts_home": game.points_home,
             "pts_away": game.points_away,
