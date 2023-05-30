@@ -130,12 +130,11 @@ def add_game(game: GameJson):
             ).where(db.teams.c.team_name == game.away_team)
         ).scalar_one()
 
-        game = {
+        postgame = {
             "game_id": game_id,
             "home": home_team_id,
             "away": away_team_id,
-            "winner": home_team_id if game.points_home > game.points_away else away_team_id,
-            "date": date,
+            "date": game.date,
             "pts_home": game.points_home,
             "pts_away": game.points_away,
             "reb_home": game.rebounds_home,
@@ -147,6 +146,6 @@ def add_game(game: GameJson):
             "blk_home": game.blocks_home,
             "blk_away": game.blocks_away
         }
-        conn.execute(db.games.insert().values(**game))
+        conn.execute(db.games.insert().values(**postgame))
 
     return game_id
