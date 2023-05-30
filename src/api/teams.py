@@ -121,7 +121,6 @@ def get_team(team_id: int,
 
 
 class stat_options(str, Enum):
-    wins = "wins"
     points = "points"
     rebounds = "rebounds"
     assists = "assists"
@@ -130,95 +129,63 @@ class stat_options(str, Enum):
 
 
 @router.get("/teams/", tags=["teams"])
-def compare_team(team_1: team_options,
-                 team_2: team_options,
-                 team_3: team_options = None,
-                 team_4: team_options = None,
-                 team_5: team_options = None,
-                 compare_by: stat_options = stat_options.wins):
-    '''
-    This endpoint compares between 2 and 5 teams by a single metric
-    * `team_i`: a team to be compared
-    * `Compare_by` must be one of the following values 
-        * `wins`: The average wins per season
+def compare_team(team_1: int,
+                 team_2: int,
+                 team_3: int = None,
+                 team_4: int = None,
+                 team_5: int = None,
+                 compare_by: stat_options = stat_options.points):
+    """
+    This endpoint compares between up to 5 teams by a single metric
+    * `team_i`: the id of a team to be compared
+    * `Compare_by` must be one of the following values
         * `points`: The average points per game
         * `rebounds`: The average rebounds per game
         * `assists`: The average assists per game
         * `steals`: The average steals per game
         * `blocks`: The average blocks per game
-    '''
-
-    team_1 = urllib.parse.unquote(team_1)
-    team_2 = urllib.parse.unquote(team_2)
-    if team_3:
-        team_3 = urllib.parse.unquote(team_3)
-    if team_4:
-        team_4 = urllib.parse.unquote(team_4)
-    if team_5:
-        team_5 = urllib.parse.unquote(team_5)
-
+    """
     num_ssn_games = 82
 
     teams_to_compare = (
         sqlalchemy.select(db.teams.c.team_id, db.teams.c.team_name)
-            .where(sqlalchemy.column('team_name').in_([team_1, team_2, team_3, team_4, team_5]))
+        .where(sqlalchemy.column('team_id').in_([team_1, team_2, team_3, team_4, team_5]))
+    )
+
+    games_query = (
+        sqlalchemy.select(
+            db.teams.c.team_id,
+            db.teams.c.team_name,
+            sqlalchemy.func.sum(sqlalchemy.case((db.games.c.home == db.teams.c.team_id, db.games.c.pts_home),
+                                                else_=db.games.c.pts_away)).label('points'),
+
+            sqlalchemy.func.sum(sqlalchemy.case((db.games.c.home == db.teams.c.team_id, db.games.c.reb_home),
+                                                else_=db.games.c.reb_away)).label('rebounds'),
+
+            sqlalchemy.func.sum(sqlalchemy.case((db.games.c.home == db.teams.c.team_id, db.games.c.ast_home),
+                                                else_=db.games.c.ast_away)).label('assists'),
+
+            sqlalchemy.func.sum(sqlalchemy.case((db.games.c.home == db.teams.c.team_id, db.games.c.stl_home),
+                                                else_=db.games.c.stl_away)).label('steals'),
+
+            sqlalchemy.func.sum(sqlalchemy.case((db.games.c.home == db.teams.c.team_id, db.games.c.blk_home),
+                                                else_=db.games.c.blk_away)).label('blocks'),
+            sqlalchemy.func.count().label('games_played')
+        )
+        .select_from(db.teams.join(db.games, sqlalchemy.or_(db.teams.c.team_id == db.games.c.home, db.teams.c.team_id == db.games.c.away)))
+        .where(sqlalchemy.column('team_id').in_([team_1, team_2, team_3, team_4, team_5]))
+        .group_by(db.teams.c.team_id, db.teams.c.team_name)
     )
 
     with db.engine.begin() as conn:
         result = conn.execute(teams_to_compare).fetchall()
-        json = []
-        for row in result:
-            team_dict = {"team id": row.team_id, "team name": row.team_name}
-            games_stmt = sqlalchemy.select(db.games.c.home,
-                                           db.games.c.pts_home,
-                                           db.games.c.reb_home,
-                                           db.games.c.ast_home,
-                                           db.games.c.stl_home,
-                                           db.games.c.blk_home,
-                                           db.games.c.away,
-                                           db.games.c.pts_away,
-                                           db.games.c.reb_away,
-                                           db.games.c.ast_away,
-                                           db.games.c.stl_away,
-                                           db.games.c.blk_away).where(
-                (db.games.c.home == row.team_id) | (db.games.c.away == row.team_id))
+        teams_data = {row.team_id: {'team_name': row.team_name} for row in result}
 
-            games = conn.execute(games_stmt).fetchall()
-            wins = points = rebounds = assists = steals = blocks = 0
+        games_result = conn.execute(games_query).fetchall()
+        for row in games_result:
+            team_id = row.team_id
+            teams_data[team_id][str(compare_by.value)] = round(
+                getattr(row, compare_by.value) / (num_ssn_games * row.games_played), 3)
 
-            for game in games:
-                winner = game.home if game.pts_home > game.pts_away else game.away
-                if winner == row.team_id:
-                    wins += 1
-                if game.home == row.team_id:
-                    points += game.pts_home
-                    rebounds += game.reb_home
-                    assists += game.ast_home
-                    steals += game.stl_home
-                    blocks += game.blk_home
-                elif game.away == row.team_id:
-                    points += game.pts_away
-                    rebounds += game.reb_away
-                    assists += game.ast_away
-                    steals += game.stl_away
-                    blocks += game.blk_away
-
-            if compare_by == "wins":
-                metric = wins / 5
-            elif compare_by == "points":
-                metric = round((points / (num_ssn_games * 5)), 2)
-            elif compare_by == "rebounds":
-                metric = round((rebounds / (num_ssn_games * 5)), 2)
-            elif compare_by == "assists":
-                metric = round((assists / (num_ssn_games * 5)), 2)
-            elif compare_by == "steals":
-                metric = round((steals / (num_ssn_games * 5)), 2)
-            elif compare_by == "blocks":
-                metric = round((blocks / (num_ssn_games * 5)), 2)
-
-            team_dict[str(compare_by.value)] = metric
-            json.append(team_dict)
-
-            json.sort(key=lambda x: -x[compare_by])
-
-        return json
+        sorted_teams = sorted(teams_data.values(), key=lambda x: -x[compare_by.value])
+        return sorted_teams
