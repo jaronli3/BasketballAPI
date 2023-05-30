@@ -95,6 +95,9 @@ def get_athlete_market_price(id: int):
     if len(athlete_stats_json) == 0:
         raise HTTPException(status_code=400, detail="athlete has no data associated with them")
 
+    if len(athlete_stats_json) == 1:
+        raise HTTPException(status_code=400, detail="athlete needs at least two seasons of data")
+
     athlete_metadata = ["athlete_id", "year", "age", "team_id", "team_name"]
 
     predictions = get_predictions(athlete_stats_json, athlete_metadata, "year")
