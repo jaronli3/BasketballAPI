@@ -4,15 +4,21 @@ from datetime import date
 from src import database as db
 from src.api.teams import team_options
 from pydantic import BaseModel
-
+from enum import Enum
 
 router = APIRouter()
 
+
+class winner_options(str, Enum):
+    home = "home"
+    away = "away"
+
+
 @router.get("/games/", tags=["games"])
 def get_game(
-        home_team: team_options,
-        away_team: team_options,
-        winner: team_options = None
+        home_team_id: int,
+        away_team_id: int,
+        winner: winner_options = None
 ):
     """
     This endpoint returns a list of games by the teams provided ordered by date
@@ -26,24 +32,13 @@ def get_game(
     * `away_team_score`: score of away team
     * `date`: the date the game was held
     """
-    if home_team == away_team:
+    if home_team_id == away_team_id:
         raise HTTPException(status_code=400, detail="Home team and away team cannot be the same")
 
-    if winner and not(winner == home_team or winner == away_team):
-        raise HTTPException(status_code=400, detail="Please select a valid winner")
-
-    home_team_id_stmt = sqlalchemy.select(
-        db.teams.c.team_id
-    ).where(home_team == db.teams.c.team_name)
-
-    away_team_id_stmt = sqlalchemy.select(
-        db.teams.c.team_id
-    ).where(away_team == db.teams.c.team_name)
+    home_team_stmt = sqlalchemy.select(db.teams.c.team_name).where(db.teams.c.team_id == home_team_id)
+    away_team_stmt = sqlalchemy.select(db.teams.c.team_name).where(db.teams.c.team_id == away_team_id)
 
     with db.engine.begin() as conn:
-        home_team_id = conn.execute(home_team_id_stmt).scalar_one()
-        away_team_id = conn.execute(away_team_id_stmt).scalar_one()
-
         result = conn.execute(
             sqlalchemy.select(
                 db.games.c.game_id,
@@ -59,19 +54,24 @@ def get_game(
         if len(result) == 0:
             raise HTTPException(status_code=404, detail="No games found")
 
+        home_team = conn.execute(home_team_stmt).scalar_one()
+        away_team = conn.execute(away_team_stmt).scalar_one()
+
         json = [
             {"game_id": game.game_id,
-             "home_team": home_team.value,
-             "away_team": away_team.value,
-             "winner": home_team.value if game.pts_home > game.pts_away else away_team.value,
+             "home_team": home_team,
+             "away_team": away_team,
+             "winner": home_team if game.pts_home > game.pts_away else away_team,
              "home_team_score": game.pts_home,
              "away_team_score": game.pts_away,
              "date": str(game.date)}
             for game in result
         ]
 
-        if winner:
-            json = [game for game in json if game.get("winner") == winner.value]
+        if winner == winner_options.home:
+            json = [game for game in json if game.get("winner") == home_team]
+        elif winner == winner_options.away:
+            json = [game for game in json if game.get("winner") == away_team]
 
         return json
 
