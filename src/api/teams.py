@@ -104,6 +104,8 @@ def get_team(team_id: int,
         if result is None:
             raise HTTPException(status_code=404, detail="team not found")
 
+        team_name = result.team_name
+
         if year:
             stats = [get_team_helper(conn, team_id, year)]
         else:
