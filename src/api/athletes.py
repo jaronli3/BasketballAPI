@@ -154,6 +154,10 @@ def add_athlete(name: str):
     This endpoint ensures the athlete does not already exist in the database
     * `name` a string of the name of the athlete
     """
+
+    # perform case sensitivity
+    name = name.title() 
+
     potential_athlete_id = sqlalchemy.select(
         db.athletes.c.athlete_id
     ).where(db.athletes.c.name == name)
