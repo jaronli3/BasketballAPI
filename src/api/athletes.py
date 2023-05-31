@@ -261,4 +261,3 @@ def add_athlete_season(athlete: AthleteJson):
         conn.execute(refresh_max_athletes)
 
     return f"{athlete_name.name}: {athlete.year}"
-    # return athlete_name.name
