@@ -130,8 +130,7 @@ def compare_team(team_1: int,
                     (db.games.c.home == db.teams.c.team_id, getattr(db.games.c, mapper[compare_by.value] + "_home")),
                     else_=getattr(db.games.c, mapper[compare_by.value] + "_away")
                 )
-            ).label(compare_by.value),
-            sqlalchemy.func.count().label('games_played')
+            ).label(compare_by.value)
         )
             .select_from(db.teams.join(db.games, sqlalchemy.or_(db.teams.c.team_id == db.games.c.home,
                                                                 db.teams.c.team_id == db.games.c.away)))
@@ -147,7 +146,7 @@ def compare_team(team_1: int,
         for row in games_result:
             team_id = row.team_id
             teams_data[team_id][str(compare_by.value)] = round(
-                getattr(row, compare_by.value) / (num_ssn_games * row.games_played), 3)
+                getattr(row, compare_by.value) / (num_ssn_games * 5), 3)
 
         sorted_teams = sorted(teams_data.values(), key=lambda x: -x[compare_by.value])
         return sorted_teams
