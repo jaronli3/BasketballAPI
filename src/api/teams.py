@@ -3,6 +3,7 @@ from enum import Enum
 import sqlalchemy
 from src import database as db
 from sqlalchemy import extract
+from fastapi.params import Query
 
 router = APIRouter()
 
@@ -14,10 +15,10 @@ def get_team_helper(conn, team_id, year):
                               db.games.c.pts_away).where((
                                                                  (db.games.c.home == team_id) |
                                                                  (db.games.c.away == team_id)) & (
-                                                                     ((extract("year", db.games.c.date) == year) &
-                                                                      (extract("month", db.games.c.date) < 10)) |
-                                                                     ((extract("year", db.games.c.date) == year - 1) &
-                                                                      (extract("month", db.games.c.date) >= 10))))
+                                                                 ((extract("year", db.games.c.date) == year) &
+                                                                  (extract("month", db.games.c.date) < 10)) |
+                                                                 ((extract("year", db.games.c.date) == year - 1) &
+                                                                  (extract("month", db.games.c.date) >= 10))))
 
     games_table = conn.execute(games).fetchall()
 
@@ -95,7 +96,7 @@ class stat_options(str, Enum):
     blocks = "blocks"
 
 
-@router.get("/teams/", tags=["teams"])
+@router.get("/teams/compare_teams", tags=["teams"])
 def compare_team(team_1: int,
                  team_2: int,
                  team_3: int = None,
@@ -116,7 +117,7 @@ def compare_team(team_1: int,
 
     teams_to_compare = (
         sqlalchemy.select(db.teams.c.team_id, db.teams.c.team_name)
-        .where(sqlalchemy.column('team_id').in_([team_1, team_2, team_3, team_4, team_5]))
+            .where(sqlalchemy.column('team_id').in_([team_1, team_2, team_3, team_4, team_5]))
     )
 
     games_query = (
@@ -139,9 +140,10 @@ def compare_team(team_1: int,
                                                 else_=db.games.c.blk_away)).label('blocks'),
             sqlalchemy.func.count().label('games_played')
         )
-        .select_from(db.teams.join(db.games, sqlalchemy.or_(db.teams.c.team_id == db.games.c.home, db.teams.c.team_id == db.games.c.away)))
-        .where(sqlalchemy.column('team_id').in_([team_1, team_2, team_3, team_4, team_5]))
-        .group_by(db.teams.c.team_id, db.teams.c.team_name)
+            .select_from(db.teams.join(db.games, sqlalchemy.or_(db.teams.c.team_id == db.games.c.home,
+                                                                db.teams.c.team_id == db.games.c.away)))
+            .where(sqlalchemy.column('team_id').in_([team_1, team_2, team_3, team_4, team_5]))
+            .group_by(db.teams.c.team_id, db.teams.c.team_name)
     )
 
     with db.engine.begin() as conn:
@@ -156,3 +158,50 @@ def compare_team(team_1: int,
 
         sorted_teams = sorted(teams_data.values(), key=lambda x: -x[compare_by.value])
         return sorted_teams
+
+
+@router.get("/teams/", tags=["teams"])
+def list_team(name: str = "",
+              limit: int = Query(30, ge=1, le=30),
+              offset: int = Query(0, ge=0)
+              ):
+    """
+    This endpoint returns a list of teams. For each team it returns:
+    * `team_id`: the internal id of the character. Can be used to query the
+      `/teams/{team_id}` endpoint.
+    * `team_name`: The name of the team.
+    * `team_abbrev`: The abbreviation of the team.
+
+    You can filter for teams whose name contains a string by using the
+    `name` query parameter.
+
+    The `limit` and `offset` query
+    parameters are used for pagination. The `limit` query parameter specifies the
+    maximum number of results to return. The `offset` query parameter specifies the
+    number of results to skip before returning results.
+    """
+
+    stmt = (
+        sqlalchemy.select(
+            db.teams.c.team_id,
+            db.teams.c.team_name,
+            db.teams.c.team_abbrev,
+        )
+            .limit(limit)
+            .offset(offset)
+    )
+
+    # filter only if name parameter is passed
+    if name != "":
+        stmt = stmt.where(db.teams.c.team_name.ilike(f"%{name}%"))
+
+    with db.engine.connect() as conn:
+        result = conn.execute(stmt)
+        json = [{
+            "team_id": row.team_id,
+            "team_name": row.team_name,
+            "team_abbrev": row.team_abbrev
+        }
+            for row in result]
+
+    return json
