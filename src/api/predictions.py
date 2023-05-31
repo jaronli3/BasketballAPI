@@ -59,13 +59,13 @@ def get_team_market_price(team_id: int):
 
     norm_predictions = normalize_predictions(predictions, max_values)
 
+    ratings_stmt = sqlalchemy.select(db.team_ratings.c.rating).where(db.team_ratings.c.team_id == team_id)
+
+    if ratings_stmt is None:
+        raise HTTPException(status_code=404, detail="team not found")
+
     # Ratings
     with db.engine.begin() as conn:
-        ratings_stmt = sqlalchemy.select(db.team_ratings.c.rating).where(db.team_ratings.c.team_id == team_id)
-
-        if ratings_stmt is None:
-            raise HTTPException(status_code=404, detail="team not found")
-
         ratings = conn.execute(ratings_stmt).fetchall()
 
     ratings = [rating_instance.rating for rating_instance in ratings]
@@ -99,15 +99,18 @@ def get_athlete_market_price(id: int):
         raise HTTPException(status_code=400, detail="athlete has no data associated with them")
 
     if len(athlete_stats_json) == 1:
-        raise HTTPException(status_code=400, detail="athlete needs at least two seasons of data")
+        raise HTTPException(status_code=400, detail="athlete needs at least two seasons of data for a valid prediction")
 
     athlete_metadata = ["athlete_id", "year", "age", "team_id", "team_name"]
 
     predictions = get_predictions(athlete_stats_json, athlete_metadata, "year")
 
     stmt = sqlalchemy.select(db.max_athlete_stats)
+    ratings_stmt = sqlalchemy.select(db.athlete_ratings.c.rating).where(db.athlete_ratings.c.athlete_id == id)
+
     with db.engine.begin() as conn:
         result = conn.execute(stmt).fetchone()
+        ratings = conn.execute(ratings_stmt).fetchall()
 
     max_values = {
         "games_played": result.max_games_played,
@@ -123,11 +126,6 @@ def get_athlete_market_price(id: int):
     }
 
     norm_predictions = normalize_predictions(predictions, max_values)
-
-    # Ratings
-    ratings_stmt = sqlalchemy.select(db.athlete_ratings.c.rating).where(db.athlete_ratings.c.athlete_id == id)
-    with db.engine.begin() as conn:
-        ratings = conn.execute(ratings_stmt).fetchall()
 
     ratings = [rating_instance.rating for rating_instance in ratings]
 
