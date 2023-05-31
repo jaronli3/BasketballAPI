@@ -1,7 +1,6 @@
 from fastapi import APIRouter, HTTPException
 import sqlalchemy
 from src import database as db
-from src.api.teams import team_options
 from src.api import athletes, teams
 
 router = APIRouter()
@@ -63,6 +62,10 @@ def get_team_market_price(team_id: int):
     # Ratings
     with db.engine.begin() as conn:
         ratings_stmt = sqlalchemy.select(db.team_ratings.c.rating).where(db.team_ratings.c.team_id == team_id)
+
+        if ratings_stmt is None:
+            raise HTTPException(status_code=404, detail="team not found")
+
         ratings = conn.execute(ratings_stmt).fetchall()
 
     ratings = [rating_instance.rating for rating_instance in ratings]
@@ -94,6 +97,9 @@ def get_athlete_market_price(id: int):
 
     if len(athlete_stats_json) == 0:
         raise HTTPException(status_code=400, detail="athlete has no data associated with them")
+
+    if len(athlete_stats_json) == 1:
+        raise HTTPException(status_code=400, detail="athlete needs at least two seasons of data")
 
     athlete_metadata = ["athlete_id", "year", "age", "team_id", "team_name"]
 
