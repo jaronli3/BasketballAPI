@@ -1,7 +1,8 @@
 from fastapi.testclient import TestClient
 
 from src.api.server import app
-from src.api.games import add_game, team_options
+from src.api.games import add_game
+from src.api.teams import team_options
 from src import database as db
 import datetime
 

@@ -1,7 +1,6 @@
 from fastapi import APIRouter, HTTPException
 import sqlalchemy
 from src import database as db
-from src.api.teams import team_options
 from src.api import athletes, teams
 
 router = APIRouter()
