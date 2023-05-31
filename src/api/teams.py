@@ -96,7 +96,7 @@ class stat_options(str, Enum):
     blocks = "blocks"
 
 
-@router.get("/teams/compare_teams", tags=["teams"])
+@router.get("/teams/compare_teams/", tags=["teams"])
 def compare_team(team_1: int,
                  team_2: int,
                  team_3: int = None,
@@ -120,24 +120,17 @@ def compare_team(team_1: int,
             .where(sqlalchemy.column('team_id').in_([team_1, team_2, team_3, team_4, team_5]))
     )
 
+    mapper = {"points": "pts", "rebounds": "reb", "assists": "ast", "steals": "stl", "blocks": "blk"}
     games_query = (
         sqlalchemy.select(
             db.teams.c.team_id,
             db.teams.c.team_name,
-            sqlalchemy.func.sum(sqlalchemy.case((db.games.c.home == db.teams.c.team_id, db.games.c.pts_home),
-                                                else_=db.games.c.pts_away)).label('points'),
-
-            sqlalchemy.func.sum(sqlalchemy.case((db.games.c.home == db.teams.c.team_id, db.games.c.reb_home),
-                                                else_=db.games.c.reb_away)).label('rebounds'),
-
-            sqlalchemy.func.sum(sqlalchemy.case((db.games.c.home == db.teams.c.team_id, db.games.c.ast_home),
-                                                else_=db.games.c.ast_away)).label('assists'),
-
-            sqlalchemy.func.sum(sqlalchemy.case((db.games.c.home == db.teams.c.team_id, db.games.c.stl_home),
-                                                else_=db.games.c.stl_away)).label('steals'),
-
-            sqlalchemy.func.sum(sqlalchemy.case((db.games.c.home == db.teams.c.team_id, db.games.c.blk_home),
-                                                else_=db.games.c.blk_away)).label('blocks'),
+            sqlalchemy.func.sum(
+                sqlalchemy.case(
+                    (db.games.c.home == db.teams.c.team_id, getattr(db.games.c, mapper[compare_by.value] + "_home")),
+                    else_=getattr(db.games.c, mapper[compare_by.value] + "_away")
+                )
+            ).label(compare_by.value),
             sqlalchemy.func.count().label('games_played')
         )
             .select_from(db.teams.join(db.games, sqlalchemy.or_(db.teams.c.team_id == db.games.c.home,
