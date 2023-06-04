@@ -17,7 +17,7 @@ def database_connection_url():
 
 
 # Create a new DB engine based on our connection string
-engine = create_engine(database_connection_url())
+engine = create_engine(database_connection_url(), isolation_level='SERIALIZABLE')
 
 
 metadata_obj = sqlalchemy.MetaData()
