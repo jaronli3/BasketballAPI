@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from src.api import athletes, games, teams, pkg_util, ratings, login, predictions
+from src.api import athletes, games, teams, pkg_util, ratings, login, predictions, predictions_isolated
 
 description = """
 Get all the information and analytical insight 
@@ -26,6 +26,10 @@ tags_metadata = [
     {
         "name": "predictions",
         "description": "Get market values for athletes and teams.",
+    },
+    {
+        "name": "predictions_isolated",
+        "description": "Get market values for athletes and teams (isolated)"
     }
     
 ]
@@ -48,6 +52,7 @@ app.include_router(pkg_util.router)
 app.include_router(ratings.router)
 app.include_router(login.router)
 app.include_router(predictions.router)
+app.include_router(predictions_isolated.router)
 
 @app.get("/")
 async def root():

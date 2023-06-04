@@ -7,7 +7,7 @@ router = APIRouter()
 
 
 class Rating(BaseModel):
-    name: str
+    id: int
     rating: conint(ge=1, le=5)
 
 
@@ -15,83 +15,64 @@ class Rating(BaseModel):
 def add_team_rating(rat: Rating):
     """
     This endpoint adds a user-generated team rating to the team_ratings table 
-    * `rat`: contains the team name (str) and rating (as int 1 --> 5) of the team 
+    * `rating`: contains the team id (int) and rating (as a number 1 through 5) of the team
 
-    The endpoint returns the id of the newly generated team rating
+    The endpoint returns the name of the rated team
     """
 
+    team_name_stmt = sqlalchemy.select(db.teams.c.team_name).where(db.teams.c.team_id == rat.id)
+
     with db.engine.begin() as conn:
-        try:
-            team_id = conn.execute(
-                sqlalchemy.text(
-                    """
-                    SELECT team_id
-                    FROM teams
-                    WHERE team_name = :team_name
-                """
-                ),
-                {
-                    "team_name": rat.name,
-                }
-            ).scalar_one()
-        except:
+
+        team_name = conn.execute(team_name_stmt).fetchone()
+
+        if not team_name:
             raise HTTPException(status_code=404, detail="team not found.")
 
-        inserted_rating = conn.execute(
+        conn.execute(
             sqlalchemy.text(
                 """
                 INSERT INTO team_ratings (team_id, rating)
                 VALUES (:team_id, :rating)
-                RETURNING team_rating_id
             """
             ),
             {
-                "team_id": team_id,
+                "team_id": rat.id,
                 "rating": rat.rating
             }
-        ).scalar_one()
+        )
 
-    return inserted_rating
+    return team_name.team_name
 
 
 @router.post("/athleteratings/", tags=["ratings"])
 def add_athlete_rating(rat: Rating):
     """
-    This endpoint adds a user-generated athlete rating to the athlete_ratings table 
-    * `rat`: contains the athlete name (str) and rating (as int 1 --> 5) of the team 
+    This endpoint adds a user-generated athlete rating to the athlete_ratings table
+    * `rating`: contains the athlete id (int) and rating (as a number 1 through 5) of the athlete
 
-    The endpoint returns the id of the newly generated athlete rating
+    The endpoint returns the name of the rated athlete
     """
 
+    athlete_name_stmt = sqlalchemy.select(db.athletes.c.name).where(db.athletes.c.athlete_id == rat.id)
+
     with db.engine.begin() as conn:
-        try:
-            athlete_id = conn.execute(
-                sqlalchemy.text(
-                    """
-                    SELECT athlete_id
-                    FROM athletes
-                    WHERE name = :athlete_name
-                """
-                ),
-                {
-                    "athlete_name": rat.name,
-                }
-            ).scalar_one()
-        except:
+        athlete_name = conn.execute(athlete_name_stmt).fetchone()
+
+        if not athlete_name:
             raise HTTPException(status_code=404, detail="athlete not found.")
 
-        inserted_rating = conn.execute(
+        conn.execute(
             sqlalchemy.text(
                 """
                 INSERT INTO athlete_ratings (athlete_id, rating)
                 VALUES (:athlete_id, :rating)
-                RETURNING athlete_rating_id
             """
             ),
             {
-                "athlete_id": athlete_id,
+                "athlete_id": rat.id,
                 "rating": rat.rating
             }
-        ).scalar_one()
+        )
 
-    return inserted_rating
+    return athlete_name.name

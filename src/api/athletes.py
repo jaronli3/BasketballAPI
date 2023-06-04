@@ -10,7 +10,6 @@ from pydantic import BaseModel
 
 router = APIRouter()
 
-
 @router.get("/athletes/{id}", tags=["athletes"])
 def get_athlete(id: int,
                 year: int = None
@@ -89,7 +88,7 @@ class StatOptions(str, Enum):
     points = "points"
 
 
-@router.get("/athletes/", tags=["athletes"])
+@router.get("/athletes/compare_athletes/", tags=["athletes"])
 def compare_athletes(
         year: int,
         athlete_ids: List[int] = Query(None),
@@ -143,9 +142,51 @@ def compare_athletes(
                 }
             )
     return json
+@router.get("/athletes/list_athletes/", tags=["athletes"])
+def list_athletes(name: str = "",
+            limit: int = Query(250, ge=1, le=250),
+            offset: int = Query(0, ge=0)
+            ):
+    """
+    This endpoint returns a list of teams. For each team it returns:
+    * `team_id`: the internal id of the character. Can be used to query the
+    `/teams/{team_id}` endpoint.
+    * `team_name`: The name of the team.
+    * `team_abbrev`: The abbreviation of the team.
 
+    You can filter for teams whose name contains a string by using the
+    `name` query parameter.
 
-@router.post("/athletes/", tags=["athletes"])
+    The `limit` and `offset` query
+    parameters are used for pagination. The `limit` query parameter specifies the
+    maximum number of results to return. The `offset` query parameter specifies the
+    number of results to skip before returning results.
+    """
+
+    stmt = (
+        sqlalchemy.select(
+            db.athletes.c.athlete_id,
+            db.athletes.c.name
+        )
+            .limit(limit)
+            .offset(offset)
+    )
+
+    # filter only if name parameter is passed
+    if name != "":
+        stmt = stmt.where(db.athletes.c.name.ilike(f"%{name}%"))
+
+    with db.engine.connect() as conn:
+        result = conn.execute(stmt)
+        json = [{
+            "athlete_id": row.athlete_id,
+            "athlete name": row.name,
+        }
+            for row in result]
+
+    return json
+
+@router.post("/athletes/{athlete_name}", tags=["athletes"])
 def add_athlete(name: str):
     """
     This endpoint adds an athlete to the database.
@@ -154,6 +195,10 @@ def add_athlete(name: str):
     This endpoint ensures the athlete does not already exist in the database
     * `name` a string of the name of the athlete
     """
+
+    # perform case sensitivity
+    name = name.title() 
+
     potential_athlete_id = sqlalchemy.select(
         db.athletes.c.athlete_id
     ).where(db.athletes.c.name == name)
@@ -256,4 +301,6 @@ def add_athlete_season(athlete: AthleteJson):
         ''')
         conn.execute(refresh_max_athletes)
 
-    return athlete_name.name
+    return f"{athlete_name.name}: {athlete.year}"
+
+
