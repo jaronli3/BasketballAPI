@@ -148,14 +148,9 @@ def list_athletes(name: str = "",
             offset: int = Query(0, ge=0)
             ):
     """
-    This endpoint returns a list of teams. For each team it returns:
-    * `team_id`: the internal id of the character. Can be used to query the
-    `/teams/{team_id}` endpoint.
-    * `team_name`: The name of the team.
-    * `team_abbrev`: The abbreviation of the team.
-
-    You can filter for teams whose name contains a string by using the
-    `name` query parameter.
+    This endpoint returns a list of athletes. For each athlete it returns:
+    * `athlete_id`: the internal id of the athlete
+    * `athlete_name`: The name of the athlete
 
     The `limit` and `offset` query
     parameters are used for pagination. The `limit` query parameter specifies the
