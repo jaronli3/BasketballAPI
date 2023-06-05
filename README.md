@@ -1,4 +1,5 @@
-**About**
+**About** 
+
 Basketball API is your best view into the past, present, and future of the NBA. Get all the information you need about historical NBA data from the past 5 years, including data about players, teams, games, and more! Rate current athletes and teams. Predict the trajectory of players and teams by getting their market price.
 
 Basketball API can provide you with historical NBA data in many useful forms. Get stats on an individual athlete, compare different athletes based on various statistics, or search for athletes by name. You can also add an athlete and an athlete’s season to the database. Get information on every NBA game from the past 5 years. Basketball API also supports adding new games to the database. Similarly to athletes, get all the information you need on individual teams, compare teams based on various statistics, or search for teams by name. Provide ratings on individual teams and athletes, which are used in assessing their trajectories. The real power of Basketball API comes into play in these projections, where you can get predictions on the relative success of teams and athletes through a market price. Basketball API also supports user logins.
