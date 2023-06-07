@@ -1,4 +1,4 @@
-# BasketballAPI
+![Logo](https://i.imgur.com/OQQBsik.png)
 
 ### About
 Basketball API is your best view into the past, present, and future of the NBA. Get all the information you need about historical NBA data from the past 5 years, including data about players, teams, games, and more! Rate current athletes and teams. Predict the trajectory of players and teams by getting their market price.
