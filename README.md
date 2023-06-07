@@ -1,4 +1,4 @@
-![Logo](https://i.imgur.com/OQQBsik.png)
+![Logo](https://i.imgur.com/tVi1act.png)
 
 ## Contents
 1. [About](#about)
