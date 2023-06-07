@@ -1,19 +1,35 @@
 ![Logo](https://i.imgur.com/OQQBsik.png)
 
-### About
+## Contents
+1. [About](#about)
+2. [Getting Started](#gettingstarted)
+3. [Installation](#installation)
+4. [API Endpoints](#endpoints)
+5. [Collaborators](#collaborators)
+* * *
+
+### About <a name="about"></a>
 Basketball API is your best view into the past, present, and future of the NBA. Get all the information you need about historical NBA data from the past 5 years, including data about players, teams, games, and more! Rate current athletes and teams. Predict the trajectory of players and teams by getting their market price.
 
 Basketball API can provide you with historical NBA data in many useful forms. Get stats on an individual athlete, compare different athletes based on various statistics, or search for athletes by name. You can also add an athlete and an athlete’s season to the database. Get information on every NBA game from the past 5 years. Basketball API also supports adding new games to the database. Similarly to athletes, get all the information you need on individual teams, compare teams based on various statistics, or search for teams by name. Provide ratings on individual teams and athletes, which are used in assessing their trajectories. The real power of Basketball API comes into play in these projections, where you can get predictions on the relative success of teams and athletes through a market price. Basketball API also supports user logins.
 
-### Getting Started 
+* * *
+
+### Getting Started <a name="gettingstarted"></a>
 - Prerequisites (see requirements.txt).
 - Ensure all dependencies are installed.
-#### Installation 
+#### Installation <a name="installation"></a>
 - Clone the repository.
 - Install the dependencies.
 - Configure a .env file.
 
-### API Endpoints
+All requirements are noted in `requirements.txt`. To install all requirements, use the following command.   
+```
+pip install -r requirements.txt
+```
+* * *
+
+### API Endpoints <a name="endpoints"></a>
 
 This API provides the following endpoints:
 - ‘/athletes/{id}’: This endpoint will return a single athlete by its id.
@@ -34,7 +50,7 @@ This API provides the following endpoints:
 
 * * *
 
-## Collaborators
+## Collaborators <a name="collaborators"></a>
 
 |member|contact|
 |------|---|
