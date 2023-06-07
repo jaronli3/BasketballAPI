@@ -1,4 +1,4 @@
-![Logo](https://i.imgur.com/tVi1act.png)
+<img src="https://i.imgur.com/tVi1act.png" alt="logo" height="200"/>
 
 ## Contents
 1. [About](#about)
