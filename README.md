@@ -32,20 +32,20 @@ pip install -r requirements.txt
 ### API Endpoints <a name="endpoints"></a>
 
 This API provides the following endpoints:
-- ‘/athletes/{id}’: This endpoint will return a single athlete by its id.
-- ‘/athletes/compare_athletes/’: This endpoint will give a comparison between the specified athletes and will return the athletes’ ids, names, and stat specified in the input.
-- ‘/athletes/list_athletes/”: This endpoint will return a list of athletes.
-- ‘athletes/{athlete_name}’: This endpoint will add an athlete to the database.
-- ‘/athletes/season’: This endpoint will add the stats from an athlete’s season to the database.
-- ‘/games/’: This endpoint will return a list of games by the teams provided ordered by date.
-- ‘/games/add_game’: This endpoint will add a game to the database.
-- ‘/predictions/team’: This endpoint will return the current market price for the given team.
-- ‘/predictions/athlete’: This endpoint will return the current market price for the given athlete.
-- ‘/teamratings/’: This endpoint will add a user-generated team rating to the database.
-- ‘/athleteratings/’ This endpoint will add a user-generated athlete rating to the database.
-- ‘/teams/{team_id}’: This endpoint will return a single team by its id.
-- ‘/teams/compare_teams/’: This endpoint will give a comparison between the specified teams and will return the teams’ names and stat specified in the input.
-- ‘/teams/’: This endpoint will return a list of teams.
+- `/athletes/{id}`: This endpoint will return a single athlete by its id.
+- `/athletes/compare_athletes/`: This endpoint will give a comparison between the specified athletes and will return the athletes’ ids, names, and stat specified in the input.
+- `/athletes/list_athletes/`: This endpoint will return a list of athletes.
+- `athletes/{athlete_name}`: This endpoint will add an athlete to the database.
+- `/athletes/season`: This endpoint will add the stats from an athlete’s season to the database.
+- `/games/`: This endpoint will return a list of games by the teams provided ordered by date.
+- `/games/add_game`: This endpoint will add a game to the database.
+- `/predictions/team`: This endpoint will return the current market price for the given team.
+- `/predictions/athlete`: This endpoint will return the current market price for the given athlete.
+- `/teamratings/`: This endpoint will add a user-generated team rating to the database.
+- `/athleteratings/`: This endpoint will add a user-generated athlete rating to the database.
+- `/teams/{team_id}`: This endpoint will return a single team by its id.
+- `/teams/compare_teams/`: This endpoint will give a comparison between the specified teams and will return the teams’ names and stat specified in the input.
+- `/teams/`: This endpoint will return a list of teams.
 
 
 * * *
