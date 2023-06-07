@@ -30,3 +30,16 @@ This API provides the following endpoints:
 - ‘/teams/{team_id}’: This endpoint will return a single team by its id.
 - ‘/teams/compare_teams/’: This endpoint will give a comparison between the specified teams and will return the teams’ names and stat specified in the input.
 - ‘/teams/’: This endpoint will return a list of teams.
+
+
+* * *
+
+## Collaborators
+
+|member|contact|
+|------|---|
+|Zachary Weinfeld|zacharyweinfeld@gmail.com|
+|Jaron Li|2002jaron@gmail.com|
+|Quinn Peterson|qap2001@gmail.com|
+
+* * *
