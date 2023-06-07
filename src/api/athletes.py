@@ -247,19 +247,20 @@ class AthleteJson(BaseModel):
     stats: AthleteStats
 
 
-@router.post("/athletes/season", tags=["athletes"])
+@router.post("/athletes/season/", tags=["athletes"])
 def add_athlete_season(athlete: AthleteJson):
     """
     This endpoint adds the stats from an athlete's season to the database.
     The athlete is represented by the AthleteJson, which contains
     * `athlete_id`: the internal id of the athlete
     * `age`: age of the athlete
+    * `year`: year that's being added
     * `team_id`: the team id of the athlete’s team
     * `stats`: a dictionary, matching StatOptions (such as "points") to values
 
-    This endpoints ensures that athlete_id and team_id exists in the database, and that
+    This endpoint ensures that athlete_id and team_id exists in the database, and that
     the athlete year pair does not already exist in the database
-    The endpoint returns the name of the athlete
+    The endpoint returns the name and year of the athlete
     """
 
     if not (2019 <= athlete.year <= 2023):
